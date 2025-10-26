@@ -1,32 +1,8 @@
-async function waitForServer(url: string, maxRetries = 30) {
-  console.log(`⏳ Waiting for server at ${url}...`);
-
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await fetch(url);
-      if (response.ok || response.status === 404) {
-        console.log(`✅ Server is ready!`);
-        return;
-      }
-    } catch (error) {
-      // Server not ready yet
-    }
-
-    console.log(`   Retry ${i + 1}/${maxRetries}...`);
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
-  }
-
-  throw new Error("Server did not become ready in time");
-}
-
 async function seedTestData() {
   const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
 
   console.log("🌱 Seeding test data...");
   console.log(`   Using URL: ${baseURL}`);
-
-  // Wait for server to be ready
-  await waitForServer(baseURL);
 
   try {
     const response = await fetch(`${baseURL}/api/auth/sign-up/email`, {
