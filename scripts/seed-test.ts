@@ -13,7 +13,7 @@ async function waitForServer(url: string, maxRetries = 30) {
     }
 
     console.log(`   Retry ${i + 1}/${maxRetries}...`);
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
   }
 
   throw new Error("Server did not become ready in time");

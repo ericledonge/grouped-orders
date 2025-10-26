@@ -20,8 +20,8 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
+    # - name: Install Playwright Browsers
+    #   run: npx playwright install --with-deps chromium
 
     - name: Seed test database
       run: npm run seed:test
