@@ -4,16 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "npm run build:preview",
+    "build:preview": "npm run db:push && next build --turbopack",
+    "build:production": "npm run db:migrate && next build --turbopack",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
     "seed:test": "tsx scripts/seed-test.ts",
     "test:unit": "vitest",
     "test:unit:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:smoke": "playwright test --grep @smoke"
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "^3.2.6",
