@@ -2,7 +2,9 @@ import { adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 const clientBaseURL =
-  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  typeof window !== "undefined"
+    ? window.location.origin // En mode client = utilise l'URL actuelle
+    : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"; // En mode SSR
 
 console.log("🌐 [Better Auth Client Config]");
 console.log("  NEXT_PUBLIC_APP_URL:", process.env.NEXT_PUBLIC_APP_URL);
