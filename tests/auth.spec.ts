@@ -7,7 +7,7 @@ test("user can sign up", async ({ page }) => {
   await page.fill('input[type="password"]', "password123");
   await page.click('button[type="submit"]');
 
-  await expect(page.getByText("Inscription")).toBeVisible();
+  await expect(page.getByText("Bienvenue")).toBeVisible();
 });
 
 test("user can sign in", async ({ page }) => {
