@@ -125,16 +125,21 @@ Les workflows sont déjà en place :
 
 ### Test 2 : Production
 
-1. Mergez la PR vers `main`
+1. **IMPORTANT** : Avant de déployer en prod, créez manuellement l'utilisateur de test :
+   - Allez sur votre app en production
+   - Créez un compte avec `test@example.com` / `TestPassword123!`
+   - Ou exécutez le seed contre la prod une seule fois
 
-2. Vérifiez dans **Vercel** :
+2. Mergez la PR vers `main`
+
+3. Vérifiez dans **Vercel** :
    - ✅ Un déploiement production démarre
    - ✅ Le build réussit avec `db:migrate`
 
-3. Vérifiez dans **GitHub Actions** :
+4. Vérifiez dans **GitHub Actions** :
    - ✅ Le workflow "Production Deployment Tests" se lance
-   - ✅ Les smoke tests passent
-   - ✅ Si échec → une issue est créée automatiquement
+   - ✅ Les smoke tests passent (homepage + login)
+   - ✅ Si échec → les logs sont disponibles dans les artifacts
 
 ---
 

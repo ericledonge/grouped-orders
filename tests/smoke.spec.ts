@@ -3,15 +3,16 @@ import { expect, test } from "@playwright/test";
 /**
  * Smoke tests pour la production
  * Ces tests critiques vérifient que les fonctionnalités essentielles fonctionnent
+ * Marqués avec @smoke pour être exécutés séparément en prod
  */
 
-test.describe("Smoke Tests @smoke", () => {
-  test("homepage loads successfully", async ({ page }) => {
+test.describe("Production Smoke Tests", () => {
+  test("homepage loads successfully @smoke", async ({ page }) => {
     // Aller à la page d'accueil
     await page.goto("/");
 
     // Vérifier que la page charge (status 200)
-    expect(page.url()).toContain("/");
+    expect(page.url()).toBeTruthy();
 
     // Vérifier qu'il n'y a pas d'erreur 500
     const hasError = await page
@@ -26,9 +27,29 @@ test.describe("Smoke Tests @smoke", () => {
     expect(bodyText!.length).toBeGreaterThan(0);
   });
 
-  test("user can sign in with test credentials", async ({ page }) => {
+  test("sign-in page loads @smoke", async ({ page }) => {
     // Aller à la page de connexion
-    await page.goto("/");
+    await page.goto("/auth/sign-in");
+
+    // Attendre que le formulaire soit chargé
+    await page.waitForLoadState("networkidle");
+
+    // Vérifier que les éléments du formulaire existent
+    const emailInput = page.locator('input[type="email"]');
+    const passwordInput = page.locator('input[type="password"]');
+    const submitButton = page.locator('button[type="submit"]');
+
+    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    await expect(passwordInput).toBeVisible();
+    await expect(submitButton).toBeVisible();
+  });
+
+  test("user can sign in with test credentials @smoke", async ({ page }) => {
+    // NOTE: Ce test nécessite que l'utilisateur test@example.com existe en prod
+    // Vous devez créer cet utilisateur manuellement en production
+
+    // Aller à la page de connexion
+    await page.goto("/auth/sign-in");
 
     // Attendre que le formulaire soit chargé
     await page.waitForLoadState("networkidle");
@@ -57,5 +78,14 @@ test.describe("Smoke Tests @smoke", () => {
       .isVisible()
       .catch(() => false);
     expect(hasLoginError).toBe(false);
+
+    // Vérifier qu'on voit le contenu authentifié
+    const isAuthenticated =
+      (await page
+        .getByText(/Bienvenue sur l'application/i)
+        .isVisible()
+        .catch(() => false)) || !page.url().includes("/sign-in");
+
+    expect(isAuthenticated).toBeTruthy();
   });
 });
