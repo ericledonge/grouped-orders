@@ -31,7 +31,7 @@ test("user can sign up", async ({ page }) => {
   await expect(page.getByText("Bienvenue")).toBeVisible();
 });
 
-test("user can sign in", async ({ page }) => {
+test("user can sign in @smoke", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("textbox", { name: "Email" }).fill("test@example.com");

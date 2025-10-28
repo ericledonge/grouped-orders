@@ -18,7 +18,8 @@
     "test:unit:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:smoke": "playwright test --ui --grep '@smoke'"
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "^3.2.6",
