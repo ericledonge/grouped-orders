@@ -1,8 +1,4 @@
-import {
-  RedirectToSignIn,
-  SignedIn,
-  UserButton,
-} from "@daveyplate/better-auth-ui";
+import { RedirectToSignIn, SignedIn } from "@daveyplate/better-auth-ui";
 
 export default function Home() {
   return (

@@ -50,7 +50,7 @@ export const frenchLocalization: Partial<AuthLocalization> = {
   // ============================================
   SIGN_IN: "Connexion",
   SIGN_IN_ACTION: "Se connecter",
-  SIGN_IN_DESCRIPTION: "Entrez votre email pour vous connecter à votre compte",
+  SIGN_IN_DESCRIPTION: "",
   SIGN_IN_USERNAME_DESCRIPTION:
     "Entrez votre nom d'utilisateur ou email pour vous connecter",
   SIGN_IN_WITH: "Se connecter avec",
