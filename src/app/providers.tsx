@@ -29,6 +29,9 @@ export function Providers({ children }: { children: ReactNode }) {
         }}
         Link={Link}
         localization={frenchLocalization}
+        social={{
+          providers: ["facebook"],
+        }}
       >
         <Toaster position="top-center" />
         {children}

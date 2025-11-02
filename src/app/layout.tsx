@@ -1,6 +1,6 @@
+import { SignedIn } from "@daveyplate/better-auth-ui";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-
 import "@/styles/globals.css";
 
 import { Header } from "@/components/header";
@@ -38,7 +38,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh flex flex-col`}
       >
         <Providers>
-          <Header />
+          <SignedIn>
+            <Header />
+          </SignedIn>
           {children}
         </Providers>
       </body>
