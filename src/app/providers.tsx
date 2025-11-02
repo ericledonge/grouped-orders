@@ -24,11 +24,13 @@ export function Providers({ children }: { children: ReactNode }) {
         navigate={router.push}
         replace={router.replace}
         onSessionChange={() => {
-          // Clear router cache (protected routes)
           router.refresh();
         }}
         Link={Link}
         localization={frenchLocalization}
+        social={{
+          providers: ["google"],
+        }}
       >
         <Toaster position="top-center" />
         {children}
