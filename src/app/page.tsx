@@ -12,8 +12,6 @@ export default function Home() {
       <SignedIn>
         {/* Votre contenu pour utilisateurs authentifiés */}
         <div>Bienvenue sur l'application!</div>
-
-        <UserButton />
       </SignedIn>
     </>
   );
