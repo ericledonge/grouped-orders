@@ -1,4 +1,44 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+
+// ============================================================
+// ENUMS - Définition des types énumérés PostgreSQL
+// ============================================================
+
+/**
+ * Type de commande groupée
+ * - monthly: Commande mensuelle régulière
+ * - private_sale: Vente privée ponctuelle
+ * - special: Commande spéciale (événement, etc.)
+ */
+export const orderTypeEnum = pgEnum("order_type", [
+  "monthly",
+  "private_sale",
+  "special",
+]);
+
+/**
+ * Statut d'une commande
+ * - open: Commande ouverte, accepte les souhaits
+ * - in_progress: Commande en cours de traitement (paniers créés)
+ * - completed: Commande terminée, tous les paniers livrés
+ */
+export const orderStatusEnum = pgEnum("order_status", [
+  "open",
+  "in_progress",
+  "completed",
+]);
+
+// ============================================================
+// TABLES BETTER AUTH - Gérées par Better Auth
+// ============================================================
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -64,3 +104,55 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+// ============================================================
+// DOMAIN TABLES - Logique métier de l'application
+// ============================================================
+
+/**
+ * Table des commandes groupées
+ * Une commande est une période d'achat groupé avec une date cible de passage
+ */
+export const order = pgTable("order", {
+  // Clé primaire : UUID auto-généré
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  // Type de commande (enum: monthly, private_sale, special)
+  type: orderTypeEnum("type").notNull(),
+
+  // Description optionnelle de la commande
+  description: text("description"),
+
+  // Date cible de passage de la commande sur Philibert
+  targetDate: timestamp("target_date").notNull(),
+
+  // Statut de la commande (enum: open, in_progress, completed)
+  status: orderStatusEnum("status").default("open").notNull(),
+
+  // Référence vers l'utilisateur créateur (admin)
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id, { onDelete: "restrict" }),
+
+  // Timestamps de création et modification
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+// ============================================================
+// RELATIONS - Définition des relations entre tables
+// ============================================================
+
+/**
+ * Relations de la table order
+ * - creator: L'utilisateur admin qui a créé la commande (many-to-one)
+ */
+export const orderRelations = relations(order, ({ one }) => ({
+  creator: one(user, {
+    fields: [order.createdBy],
+    references: [user.id],
+  }),
+}));
