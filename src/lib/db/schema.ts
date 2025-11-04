@@ -36,6 +36,24 @@ export const orderStatusEnum = pgEnum("order_status", [
   "completed",
 ]);
 
+/**
+ * Statut d'un souhait
+ * - submitted: Souhait soumis par le membre
+ * - in_basket: Ajouté au panier Philibert
+ * - validated: Validé par l'admin, sera commandé
+ * - refused: Refusé par l'admin
+ * - paid: Payé (commande passée)
+ * - picked_up: Récupéré par le membre
+ */
+export const wishStatusEnum = pgEnum("wish_status", [
+  "submitted",
+  "in_basket",
+  "validated",
+  "refused",
+  "paid",
+  "picked_up",
+]);
+
 // ============================================================
 // TABLES BETTER AUTH - Gérées par Better Auth
 // ============================================================
@@ -142,6 +160,44 @@ export const order = pgTable("order", {
     .notNull(),
 });
 
+/**
+ * Table des souhaits (wishes)
+ * Un souhait représente la demande d'un jeu par un membre pour une commande donnée
+ */
+export const wish = pgTable("wish", {
+  // Clé primaire : UUID auto-généré
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  // Référence vers la commande groupée (cascade on delete: si la commande est supprimée, les souhaits le sont aussi)
+  orderId: uuid("order_id")
+    .notNull()
+    .references(() => order.id, { onDelete: "cascade" }),
+
+  // Référence vers l'utilisateur qui a fait le souhait (restrict on delete: ne pas supprimer un user avec des souhaits)
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "restrict" }),
+
+  // Nom du jeu demandé
+  gameName: text("game_name").notNull(),
+
+  // Référence Philibert (ex: "PH3456789")
+  philibertReference: text("philibert_reference").notNull(),
+
+  // URL Philibert optionnelle
+  philibertUrl: text("philibert_url"),
+
+  // Statut du souhait (enum: submitted, in_basket, validated, refused, paid, picked_up)
+  status: wishStatusEnum("status").default("submitted").notNull(),
+
+  // Timestamps de création et modification
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
 // ============================================================
 // RELATIONS - Définition des relations entre tables
 // ============================================================
@@ -149,10 +205,28 @@ export const order = pgTable("order", {
 /**
  * Relations de la table order
  * - creator: L'utilisateur admin qui a créé la commande (many-to-one)
+ * - wishes: Les souhaits associés à cette commande (one-to-many)
  */
-export const orderRelations = relations(order, ({ one }) => ({
+export const orderRelations = relations(order, ({ one, many }) => ({
   creator: one(user, {
     fields: [order.createdBy],
+    references: [user.id],
+  }),
+  wishes: many(wish),
+}));
+
+/**
+ * Relations de la table wish
+ * - order: La commande à laquelle appartient ce souhait (many-to-one)
+ * - user: L'utilisateur qui a créé ce souhait (many-to-one)
+ */
+export const wishRelations = relations(wish, ({ one }) => ({
+  order: one(order, {
+    fields: [wish.orderId],
+    references: [order.id],
+  }),
+  user: one(user, {
+    fields: [wish.userId],
     references: [user.id],
   }),
 }));
