@@ -36,7 +36,7 @@ test("user can sign in @smoke", async ({ page }) => {
 
   await page.getByRole("textbox", { name: "Email" }).fill("test@example.com");
   await page.getByLabel("Mot de passe").fill("TestPassword123!");
-  await page.getByRole("button", { name: "Se connecter" }).click();
+  await page.getByRole("button", { name: "Se connecter", exact: true }).click();
 
   console.log("🔍 Clicked login button, waiting for redirect...");
   await page.waitForTimeout(2000);
