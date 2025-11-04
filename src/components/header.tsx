@@ -1,7 +1,6 @@
-import { GitHubIcon, UserButton } from "@daveyplate/better-auth-ui";
+import { UserButton } from "@daveyplate/better-auth-ui";
 import Link from "next/link";
 import { ModeToggle } from "./mode-toggle";
-import { Button } from "./ui/button";
 
 export function Header() {
   return (
