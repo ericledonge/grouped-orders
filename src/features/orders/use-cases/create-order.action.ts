@@ -1,53 +1,31 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { order } from "@/lib/db/schema";
+import { requireAdmin } from "@/lib/auth/session";
+import { orderRepository } from "../domain/order.repository";
 import {
-  createOrderSchema,
   type CreateOrderInput,
+  createOrderSchema,
 } from "../domain/order.validation";
 
 export async function createOrder(input: CreateOrderInput) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session) {
-      return {
-        success: false,
-        error: "Non authentifié",
-      };
-    }
-
-    if (session.user.role !== "admin") {
-      return {
-        success: false,
-        error: "Accès refusé : rôle admin requis",
-      };
-    }
+    const session = await requireAdmin();
 
     const validatedData = createOrderSchema.parse(input);
 
-    const [newOrder] = await db
-      .insert(order)
-      .values({
-        type: validatedData.type,
-        targetDate: validatedData.targetDate,
-        description: validatedData.description,
-        createdBy: session.user.id,
-        status: "open",
-      })
-      .returning({ id: order.id });
+    const orderId = await orderRepository.create({
+      type: validatedData.type,
+      targetDate: validatedData.targetDate,
+      description: validatedData.description,
+      createdBy: session.user.id,
+    });
 
     revalidatePath("/admin/orders");
 
     return {
       success: true,
-      orderId: newOrder.id,
+      orderId,
     };
   } catch (error) {
     console.error("Error creating order:", error);
