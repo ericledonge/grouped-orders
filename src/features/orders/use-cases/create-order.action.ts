@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/session";
+import { getErrorMessage } from "@/lib/errors";
 import { orderRepository } from "../domain/order.repository";
 import {
   type CreateOrderInput,
@@ -29,12 +30,13 @@ export async function createOrder(input: CreateOrderInput) {
     };
   } catch (error) {
     console.error("Error creating order:", error);
+
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Erreur lors de la création de la commande",
+      error: getErrorMessage(
+        error,
+        "Erreur lors de la création de la commande",
+      ),
     };
   }
 }
