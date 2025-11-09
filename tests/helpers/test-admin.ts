@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { user } from "@/lib/db/schema";
+import { order, user } from "@/lib/db/schema";
 
 /**
  * Crée un utilisateur admin de test unique pour les tests E2E
@@ -27,8 +27,9 @@ export async function createTestAdmin() {
   });
 
   if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      `Failed to create test admin: ${response.status} ${response.statusText}`,
+      `Failed to create test admin: ${response.status} ${response.statusText}\n${JSON.stringify(errorData, null, 2)}`,
     );
   }
 
@@ -59,8 +60,13 @@ export async function createTestAdmin() {
  * @param userId - L'ID de l'utilisateur à supprimer
  */
 export async function cleanupTestUser(userId: string) {
+  // Supprimer d'abord les commandes créées par cet utilisateur
+  // (les wishes sont supprimées en cascade grâce au FK order_id)
+  await db.delete(order).where(eq(order.createdBy, userId));
+
+  // Ensuite supprimer l'utilisateur
+  // (account et session sont supprimées en cascade grâce aux FK)
   await db.delete(user).where(eq(user.id, userId));
-  // Les tables liées (account, session) sont supprimées en cascade grâce aux FK
 }
 
 /**
