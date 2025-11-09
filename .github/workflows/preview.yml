@@ -26,15 +26,62 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Get Neon branch name
+        id: get-branch
+        run: |
+          # Récupère le nom de la branche depuis le commit
+          BRANCH_NAME=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "${{ github.event.deployment_status.deployment.url }}" | \
+            jq -r '.ref' | sed 's/refs\/heads\///')
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "Detected branch: $BRANCH_NAME"
+
+      - name: Get DATABASE_URL from Neon
+        id: get-db-url
+        run: |
+          # Récupère la liste des branches Neon
+          NEON_BRANCH_NAME="preview/${{ steps.get-branch.outputs.branch_name }}"
+          echo "Looking for Neon branch: $NEON_BRANCH_NAME"
+
+          # Appelle l'API Neon pour trouver la branche
+          BRANCHES=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches")
+
+          # Trouve la branche correspondante et extrait son ID
+          BRANCH_ID=$(echo "$BRANCHES" | jq -r ".branches[] | select(.name == \"$NEON_BRANCH_NAME\") | .id")
+
+          if [ -z "$BRANCH_ID" ]; then
+            echo "Error: Neon branch '$NEON_BRANCH_NAME' not found"
+            exit 1
+          fi
+
+          echo "Found Neon branch ID: $BRANCH_ID"
+
+          # Récupère la connection string
+          CONNECTION_URIS=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/connection_uri?branch_id=$BRANCH_ID")
+
+          DATABASE_URL=$(echo "$CONNECTION_URIS" | jq -r '.uri')
+
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Error: Could not retrieve DATABASE_URL"
+            exit 1
+          fi
+
+          echo "DATABASE_URL retrieved successfully"
+          echo "database_url=$DATABASE_URL" >> $GITHUB_OUTPUT
+
       - name: Seed test database
         run: npm run seed:test
         env:
           BETTER_AUTH_URL: ${{ github.event.deployment_status.target_url }}
+          DATABASE_URL: ${{ steps.get-db-url.outputs.database_url }}
 
       - name: Run Playwright E2E tests
         run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.target_url }}
+          DATABASE_URL: ${{ steps.get-db-url.outputs.database_url }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
