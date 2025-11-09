@@ -16,6 +16,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "seed:test": "tsx scripts/seed-test.ts",
+    "promote-admin": "tsx scripts/promote-admin.ts",
     "test:unit": "vitest",
     "test:unit:ui": "vitest --ui",
     "test:e2e": "playwright test",
