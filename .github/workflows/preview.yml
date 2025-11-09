@@ -26,26 +26,29 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Debug event context
-        run: |
-          echo "Event context:"
-          echo '${{ toJson(github.event) }}' | jq .
-
       - name: Get Neon branch name
         id: get-branch
         run: |
-          # Essaie d'extraire le nom de la branche depuis l'URL de déploiement Vercel
-          DEPLOYMENT_URL="${{ github.event.deployment_status.target_url }}"
-          echo "Deployment URL: $DEPLOYMENT_URL"
+          # Récupère le SHA du déploiement
+          COMMIT_SHA="${{ github.sha }}"
+          echo "Commit SHA: $COMMIT_SHA"
 
-          # Vercel utilise le pattern: https://grouped-order-git-{branch}-{user}.vercel.app
-          # Extrait le nom de la branche depuis l'URL
-          BRANCH_NAME=$(echo "$DEPLOYMENT_URL" | sed -n 's/.*-git-\([^-]*\)-.*/\1/p')
+          # Utilise l'API GitHub pour trouver toutes les branches qui contiennent ce commit
+          BRANCHES_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA/branches-where-head")
 
-          if [ -z "$BRANCH_NAME" ]; then
-            echo "Error: Could not extract branch name from URL: $DEPLOYMENT_URL"
-            echo "Dumping full event for debugging..."
-            echo '${{ toJson(github.event) }}'
+          echo "Branches containing this commit:"
+          echo "$BRANCHES_JSON" | jq -r '.[].name'
+
+          # Prend la première branche (souvent la branche courante)
+          BRANCH_NAME=$(echo "$BRANCHES_JSON" | jq -r '.[0].name')
+
+          if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "null" ]; then
+            echo "Error: Could not determine branch name from commit $COMMIT_SHA"
+            echo "Available context:"
+            echo "  github.ref: ${{ github.ref }}"
+            echo "  github.head_ref: ${{ github.head_ref }}"
+            echo "  github.base_ref: ${{ github.base_ref }}"
             exit 1
           fi
 
