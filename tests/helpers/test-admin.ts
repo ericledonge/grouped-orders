@@ -2,12 +2,25 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { order, user } from "@/lib/db/schema";
 
+// Délai entre les créations pour éviter le rate limiting
+let lastCreationTime = 0;
+const MIN_DELAY_BETWEEN_CREATIONS = 1000; // 1 seconde
+
 /**
  * Crée un utilisateur admin de test unique pour les tests E2E
  *
  * @returns Les credentials de l'admin créé
  */
 export async function createTestAdmin() {
+  // Attendre si nécessaire pour éviter le rate limiting
+  const now = Date.now();
+  const timeSinceLastCreation = now - lastCreationTime;
+  if (timeSinceLastCreation < MIN_DELAY_BETWEEN_CREATIONS) {
+    const delay = MIN_DELAY_BETWEEN_CREATIONS - timeSinceLastCreation;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  lastCreationTime = Date.now();
+
   const timestamp = Date.now();
   const email = `test-admin-${timestamp}@example.com`;
   const password = "TestAdmin123!";
