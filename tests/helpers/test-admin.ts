@@ -28,21 +28,45 @@ export async function createTestAdmin() {
 
   const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
 
-  // 1. Créer l'utilisateur via l'API Better Auth
-  const response = await fetch(`${baseURL}/api/auth/sign-up/email`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email,
-      password,
-      name,
-    }),
-  });
+  // 1. Créer l'utilisateur via l'API Better Auth avec retry en cas de rate limiting
+  let response: Response;
+  let attempt = 0;
+  const maxAttempts = 3;
+
+  while (attempt < maxAttempts) {
+    response = await fetch(`${baseURL}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+      }),
+    });
+
+    // Si succès, sortir de la boucle
+    if (response.ok) break;
+
+    // Si rate limiting (429), attendre et réessayer
+    if (response.status === 429 && attempt < maxAttempts - 1) {
+      const waitTime = (attempt + 1) * 3000; // 3s, 6s, 9s
+      console.log(`⏳ Rate limited, waiting ${waitTime}ms before retry ${attempt + 1}/${maxAttempts - 1}...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      attempt++;
+      continue;
+    }
+
+    // Autre erreur, lever l'exception
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      `Failed to create test admin: ${response.status} ${response.statusText}\n${JSON.stringify(errorData, null, 2)}`,
+    );
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      `Failed to create test admin: ${response.status} ${response.statusText}\n${JSON.stringify(errorData, null, 2)}`,
+      `Failed to create test admin after ${maxAttempts} attempts: ${response.status} ${response.statusText}\n${JSON.stringify(errorData, null, 2)}`,
     );
   }
 
