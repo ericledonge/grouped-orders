@@ -143,6 +143,7 @@ jobs:
         run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.target_url }}
+          BETTER_AUTH_URL: ${{ github.event.deployment_status.target_url }}
           DATABASE_URL: ${{ steps.get-db-url.outputs.database_url }}
 
       - name: Upload Playwright report
