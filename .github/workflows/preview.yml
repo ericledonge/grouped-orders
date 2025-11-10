@@ -88,8 +88,9 @@ jobs:
           echo "DEBUG - Databases response:"
           echo "$DATABASES" | jq .
 
-          # Récupère le nom de la première database
+          # Récupère le nom de la première database et son owner
           DATABASE_NAME=$(echo "$DATABASES" | jq -r '.databases[0].name')
+          ROLE_NAME=$(echo "$DATABASES" | jq -r '.databases[0].owner_name')
 
           if [ -z "$DATABASE_NAME" ] || [ "$DATABASE_NAME" = "null" ]; then
             echo "Error: Could not retrieve database name"
@@ -97,11 +98,18 @@ jobs:
             exit 1
           fi
 
-          echo "Found database name: $DATABASE_NAME"
+          if [ -z "$ROLE_NAME" ] || [ "$ROLE_NAME" = "null" ]; then
+            echo "Error: Could not retrieve role name"
+            echo "Databases response was: $DATABASES"
+            exit 1
+          fi
 
-          # Récupère la connection string avec le database_name
+          echo "Found database name: $DATABASE_NAME"
+          echo "Found role name: $ROLE_NAME"
+
+          # Récupère la connection string avec database_name et role_name
           CONNECTION_URIS=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
-            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/connection_uri?branch_id=$BRANCH_ID&database_name=$DATABASE_NAME")
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/connection_uri?branch_id=$BRANCH_ID&database_name=$DATABASE_NAME&role_name=$ROLE_NAME")
 
           echo "DEBUG - Connection URI response:"
           echo "$CONNECTION_URIS" | jq .
