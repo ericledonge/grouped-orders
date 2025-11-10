@@ -1,61 +1,72 @@
 import { expect, test } from "@playwright/test";
+import { cleanupTestUser, createTestAdmin } from "./helpers/test-admin";
 
-test("user can sign up", async ({ page }) => {
-  const email = `test-${Date.now()}@example.com`;
+test.describe("Authentication", () => {
+  test("user can sign up", async ({ page }) => {
+    const timestamp = Date.now();
+    const email = `test-signup-${timestamp}@example.com`;
+    const password = "TestPassword123!";
+    let userId: string;
 
-  await page.goto("/auth/sign-up");
+    try {
+      await page.goto("/auth/sign-up");
 
-  await page.getByRole("textbox", { name: "Nom" }).fill("Test Example");
-  await page.getByRole("textbox", { name: "Email" }).fill(email);
-  await page.getByLabel("Mot de passe").fill("password123");
-  await page.getByRole("button", { name: "Créer un compte" }).click();
+      await page.getByRole("textbox", { name: "Nom" }).fill("Test User");
+      await page.getByRole("textbox", { name: "Email" }).fill(email);
+      await page.getByLabel("Mot de passe").fill(password);
+      await page.getByRole("button", { name: "Créer un compte" }).click();
 
-  console.log("🔍 Clicked signup button, waiting for redirect...");
-  await page.waitForTimeout(2000);
+      console.log("🔍 Clicked signup button, waiting for redirect...");
 
-  const errorVisible = await page
-    .locator("text=/error|invalid|failed/i")
-    .isVisible()
-    .catch(() => false);
-  if (errorVisible) {
-    const errorText = await page
-      .locator("text=/error|invalid|failed/i")
-      .textContent();
-    console.log("❌ Error visible on page:", errorText);
-  }
+      // Attendre la redirection (peut varier selon votre implémentation)
+      await page.waitForURL("**/", { timeout: 10000 });
 
-  console.log("📍 Current URL:", page.url());
+      console.log("📍 Current URL:", page.url());
 
-  await page.waitForURL("**/");
+      await expect(page.getByText("Bienvenue")).toBeVisible();
 
-  await expect(page.getByText("Bienvenue")).toBeVisible();
-});
+      // Récupérer l'ID utilisateur pour cleanup
+      // On pourrait aussi le récupérer depuis la DB via l'email
+      const { db } = await import("@/lib/db");
+      const { user } = await import("@/lib/db/schema");
+      const { eq } = await import("drizzle-orm");
+      const [createdUser] = await db
+        .select()
+        .from(user)
+        .where(eq(user.email, email))
+        .limit(1);
+      userId = createdUser?.id;
+    } finally {
+      // Nettoyer l'utilisateur créé
+      if (userId) {
+        await cleanupTestUser(userId);
+      }
+    }
+  });
 
-test("user can sign in @smoke", async ({ page }) => {
-  await page.goto("/");
+  test("user can sign in @smoke", async ({ page }) => {
+    // Créer un utilisateur de test
+    const { email, password, userId } = await createTestAdmin();
 
-  await page.getByRole("textbox", { name: "Email" }).fill("test@example.com");
-  await page.getByLabel("Mot de passe").fill("TestPassword123!");
-  await page.getByRole("button", { name: "Se connecter", exact: true }).click();
+    try {
+      await page.goto("/");
 
-  console.log("🔍 Clicked login button, waiting for redirect...");
-  await page.waitForTimeout(2000);
+      await page.getByRole("textbox", { name: "Email" }).fill(email);
+      await page.getByLabel("Mot de passe").fill(password);
+      await page
+        .getByRole("button", { name: "Se connecter", exact: true })
+        .click();
 
-  const errorVisible = await page
-    .locator("text=/error|invalid|credentials/i")
-    .isVisible()
-    .catch(() => false);
-  if (errorVisible) {
-    const errorText = await page
-      .locator("text=/error|invalid|credentials/i")
-      .textContent();
-    console.log("❌ Error visible on page:", errorText);
-  }
+      console.log("🔍 Clicked login button, waiting for redirect...");
 
-  console.log("📍 Current URL:", page.url());
-  console.log("📄 Page title:", await page.title());
+      await page.waitForURL("**/", { timeout: 10000 });
 
-  await page.waitForURL("**/");
+      console.log("📍 Current URL:", page.url());
 
-  await expect(page.getByText("Bienvenue")).toBeVisible();
+      await expect(page.getByText("Bienvenue")).toBeVisible();
+    } finally {
+      // Nettoyer l'utilisateur de test
+      await cleanupTestUser(userId);
+    }
+  });
 });
