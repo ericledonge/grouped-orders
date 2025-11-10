@@ -81,19 +81,19 @@ jobs:
 
           echo "Found Neon branch ID: $BRANCH_ID"
 
-          # Récupère les informations de la branche pour obtenir le nom de la database
-          BRANCH_INFO=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
-            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/$BRANCH_ID")
+          # Récupère les databases de la branche
+          DATABASES=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/$BRANCH_ID/databases")
 
-          echo "DEBUG - Branch info:"
-          echo "$BRANCH_INFO" | jq .
+          echo "DEBUG - Databases response:"
+          echo "$DATABASES" | jq .
 
-          # Récupère le nom de la database (généralement la première database de la branche)
-          DATABASE_NAME=$(echo "$BRANCH_INFO" | jq -r '.branch.databases[0].name')
+          # Récupère le nom de la première database
+          DATABASE_NAME=$(echo "$DATABASES" | jq -r '.databases[0].name')
 
           if [ -z "$DATABASE_NAME" ] || [ "$DATABASE_NAME" = "null" ]; then
-            echo "Error: Could not retrieve database name from branch"
-            echo "Branch info was: $BRANCH_INFO"
+            echo "Error: Could not retrieve database name"
+            echo "Databases response was: $DATABASES"
             exit 1
           fi
 
