@@ -66,11 +66,16 @@ jobs:
           BRANCHES=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
             "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches")
 
+          echo "DEBUG - Neon branches response:"
+          echo "$BRANCHES" | jq -r '.branches[] | .name'
+
           # Trouve la branche correspondante et extrait son ID
           BRANCH_ID=$(echo "$BRANCHES" | jq -r ".branches[] | select(.name == \"$NEON_BRANCH_NAME\") | .id")
 
-          if [ -z "$BRANCH_ID" ]; then
+          if [ -z "$BRANCH_ID" ] || [ "$BRANCH_ID" = "null" ]; then
             echo "Error: Neon branch '$NEON_BRANCH_NAME' not found"
+            echo "Available branches:"
+            echo "$BRANCHES" | jq -r '.branches[] | .name'
             exit 1
           fi
 
@@ -80,15 +85,27 @@ jobs:
           CONNECTION_URIS=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
             "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/connection_uri?branch_id=$BRANCH_ID")
 
+          echo "DEBUG - Connection URI response:"
+          echo "$CONNECTION_URIS" | jq .
+
           DATABASE_URL=$(echo "$CONNECTION_URIS" | jq -r '.uri')
 
-          if [ -z "$DATABASE_URL" ]; then
+          if [ -z "$DATABASE_URL" ] || [ "$DATABASE_URL" = "null" ]; then
             echo "Error: Could not retrieve DATABASE_URL"
+            echo "Response was: $CONNECTION_URIS"
             exit 1
           fi
 
           echo "DATABASE_URL retrieved successfully"
           echo "database_url=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Verify DATABASE_URL
+        run: |
+          if [ -z "${{ steps.get-db-url.outputs.database_url }}" ] || [ "${{ steps.get-db-url.outputs.database_url }}" = "null" ]; then
+            echo "::error::DATABASE_URL is empty or null"
+            exit 1
+          fi
+          echo "DATABASE_URL is set correctly"
 
       - name: Seed test database
         run: npm run seed:test
