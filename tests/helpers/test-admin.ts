@@ -4,7 +4,7 @@ import { order, user } from "@/lib/db/schema";
 
 // Délai entre les créations pour éviter le rate limiting
 let lastCreationTime = 0;
-const MIN_DELAY_BETWEEN_CREATIONS = 1000; // 1 seconde
+const MIN_DELAY_BETWEEN_CREATIONS = 3000; // 3 secondes
 
 /**
  * Crée un utilisateur admin de test unique pour les tests E2E
