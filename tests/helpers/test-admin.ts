@@ -29,7 +29,7 @@ export async function createTestAdmin() {
   const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
 
   // 1. Créer l'utilisateur via l'API Better Auth avec retry en cas de rate limiting
-  let response: Response;
+  let response: Response | null = null;
   let attempt = 0;
   const maxAttempts = 3;
 
@@ -63,10 +63,10 @@ export async function createTestAdmin() {
     );
   }
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+  if (!response || !response.ok) {
+    const errorData = response ? await response.json().catch(() => ({})) : {};
     throw new Error(
-      `Failed to create test admin after ${maxAttempts} attempts: ${response.status} ${response.statusText}\n${JSON.stringify(errorData, null, 2)}`,
+      `Failed to create test admin after ${maxAttempts} attempts: ${response?.status || 'unknown'} ${response?.statusText || ''}\n${JSON.stringify(errorData, null, 2)}`,
     );
   }
 
