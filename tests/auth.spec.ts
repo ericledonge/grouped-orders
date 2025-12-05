@@ -35,12 +35,13 @@ test.describe("Authentication", () => {
 
       console.log("🔍 Clicked signup button, waiting for redirect...");
 
-      // Attendre la redirection
-      await page.waitForURL("**/", { timeout: 10000 });
+      // Attendre la redirection vers /orders (membre par défaut)
+      await page.waitForURL("**/orders", { timeout: 10000 });
 
       console.log("📍 Current URL:", page.url());
 
-      await expect(page.getByText("Bienvenue")).toBeVisible();
+      // Vérifier qu'on est bien sur la page des commandes
+      await expect(page.getByRole("heading", { name: "Commandes" })).toBeVisible();
 
       // Récupérer l'ID utilisateur pour cleanup
       const { db } = await import("@/lib/db");
@@ -71,10 +72,12 @@ test.describe("Authentication", () => {
 
     console.log("🔍 Clicked login button, waiting for redirect...");
 
-    await page.waitForURL("**/", { timeout: 10000 });
+    // L'utilisateur de test est un admin, donc redirection vers /admin/dashboard
+    await page.waitForURL("**/admin/dashboard", { timeout: 10000 });
 
     console.log("📍 Current URL:", page.url());
 
-    await expect(page.getByText("Bienvenue")).toBeVisible();
+    // Vérifier qu'on est bien sur le dashboard admin
+    await expect(page.getByRole("heading", { name: "Dashboard Admin" })).toBeVisible();
   });
 });

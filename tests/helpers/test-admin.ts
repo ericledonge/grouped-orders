@@ -50,7 +50,9 @@ export async function createTestAdmin() {
     // Si rate limiting (429), attendre et réessayer
     if (response.status === 429 && attempt < maxAttempts - 1) {
       const waitTime = (attempt + 1) * 3000; // 3s, 6s, 9s
-      console.log(`⏳ Rate limited, waiting ${waitTime}ms before retry ${attempt + 1}/${maxAttempts - 1}...`);
+      console.log(
+        `⏳ Rate limited, waiting ${waitTime}ms before retry ${attempt + 1}/${maxAttempts - 1}...`,
+      );
       await new Promise((resolve) => setTimeout(resolve, waitTime));
       attempt++;
       continue;
@@ -66,7 +68,7 @@ export async function createTestAdmin() {
   if (!response || !response.ok) {
     const errorData = response ? await response.json().catch(() => ({})) : {};
     throw new Error(
-      `Failed to create test admin after ${maxAttempts} attempts: ${response?.status || 'unknown'} ${response?.statusText || ''}\n${JSON.stringify(errorData, null, 2)}`,
+      `Failed to create test admin after ${maxAttempts} attempts: ${response?.status || "unknown"} ${response?.statusText || ""}\n${JSON.stringify(errorData, null, 2)}`,
     );
   }
 

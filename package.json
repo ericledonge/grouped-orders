@@ -25,9 +25,10 @@
     "test:e2e:smoke": "playwright test --grep '@smoke'"
   },
   "dependencies": {
-    "@daveyplate/better-auth-ui": "^3.2.6",
+    "@daveyplate/better-auth-ui": "^3.2.13",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-popover": "^1.1.15",
