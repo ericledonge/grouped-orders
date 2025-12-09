@@ -26,15 +26,125 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Get Neon branch name
+        id: get-branch
+        run: |
+          # Récupère le SHA du déploiement
+          COMMIT_SHA="${{ github.sha }}"
+          echo "Commit SHA: $COMMIT_SHA"
+
+          # Utilise l'API GitHub pour trouver toutes les branches qui contiennent ce commit
+          BRANCHES_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_SHA/branches-where-head")
+
+          echo "Branches containing this commit:"
+          echo "$BRANCHES_JSON" | jq -r '.[].name'
+
+          # Prend la première branche (souvent la branche courante)
+          BRANCH_NAME=$(echo "$BRANCHES_JSON" | jq -r '.[0].name')
+
+          if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "null" ]; then
+            echo "Error: Could not determine branch name from commit $COMMIT_SHA"
+            echo "Available context:"
+            echo "  github.ref: ${{ github.ref }}"
+            echo "  github.head_ref: ${{ github.head_ref }}"
+            echo "  github.base_ref: ${{ github.base_ref }}"
+            exit 1
+          fi
+
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "Detected branch: $BRANCH_NAME"
+
+      - name: Get DATABASE_URL from Neon
+        id: get-db-url
+        run: |
+          # Récupère la liste des branches Neon
+          NEON_BRANCH_NAME="preview/${{ steps.get-branch.outputs.branch_name }}"
+          echo "Looking for Neon branch: $NEON_BRANCH_NAME"
+
+          # Appelle l'API Neon pour trouver la branche
+          BRANCHES=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches")
+
+          echo "DEBUG - Neon branches response:"
+          echo "$BRANCHES" | jq -r '.branches[] | .name'
+
+          # Trouve la branche correspondante et extrait son ID
+          BRANCH_ID=$(echo "$BRANCHES" | jq -r ".branches[] | select(.name == \"$NEON_BRANCH_NAME\") | .id")
+
+          if [ -z "$BRANCH_ID" ] || [ "$BRANCH_ID" = "null" ]; then
+            echo "Error: Neon branch '$NEON_BRANCH_NAME' not found"
+            echo "Available branches:"
+            echo "$BRANCHES" | jq -r '.branches[] | .name'
+            exit 1
+          fi
+
+          echo "Found Neon branch ID: $BRANCH_ID"
+
+          # Récupère les databases de la branche
+          DATABASES=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/branches/$BRANCH_ID/databases")
+
+          echo "DEBUG - Databases response:"
+          echo "$DATABASES" | jq .
+
+          # Récupère le nom de la première database et son owner
+          DATABASE_NAME=$(echo "$DATABASES" | jq -r '.databases[0].name')
+          ROLE_NAME=$(echo "$DATABASES" | jq -r '.databases[0].owner_name')
+
+          if [ -z "$DATABASE_NAME" ] || [ "$DATABASE_NAME" = "null" ]; then
+            echo "Error: Could not retrieve database name"
+            echo "Databases response was: $DATABASES"
+            exit 1
+          fi
+
+          if [ -z "$ROLE_NAME" ] || [ "$ROLE_NAME" = "null" ]; then
+            echo "Error: Could not retrieve role name"
+            echo "Databases response was: $DATABASES"
+            exit 1
+          fi
+
+          echo "Found database name: $DATABASE_NAME"
+          echo "Found role name: $ROLE_NAME"
+
+          # Récupère la connection string avec database_name et role_name
+          CONNECTION_URIS=$(curl -s -H "Authorization: Bearer ${{ secrets.NEON_API_KEY }}" \
+            "https://console.neon.tech/api/v2/projects/${{ secrets.NEON_PROJECT_ID }}/connection_uri?branch_id=$BRANCH_ID&database_name=$DATABASE_NAME&role_name=$ROLE_NAME")
+
+          echo "DEBUG - Connection URI response:"
+          echo "$CONNECTION_URIS" | jq .
+
+          DATABASE_URL=$(echo "$CONNECTION_URIS" | jq -r '.uri')
+
+          if [ -z "$DATABASE_URL" ] || [ "$DATABASE_URL" = "null" ]; then
+            echo "Error: Could not retrieve DATABASE_URL"
+            echo "Response was: $CONNECTION_URIS"
+            exit 1
+          fi
+
+          echo "DATABASE_URL retrieved successfully"
+          echo "database_url=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Verify DATABASE_URL
+        run: |
+          if [ -z "${{ steps.get-db-url.outputs.database_url }}" ] || [ "${{ steps.get-db-url.outputs.database_url }}" = "null" ]; then
+            echo "::error::DATABASE_URL is empty or null"
+            exit 1
+          fi
+          echo "DATABASE_URL is set correctly"
+
       - name: Seed test database
         run: npm run seed:test
         env:
           BETTER_AUTH_URL: ${{ github.event.deployment_status.target_url }}
+          DATABASE_URL: ${{ steps.get-db-url.outputs.database_url }}
 
       - name: Run Playwright E2E tests
         run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.target_url }}
+          BETTER_AUTH_URL: ${{ github.event.deployment_status.target_url }}
+          DATABASE_URL: ${{ steps.get-db-url.outputs.database_url }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
