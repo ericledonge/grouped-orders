@@ -35,17 +35,13 @@ test.describe("Authentication", () => {
 
       console.log("🔍 Clicked signup button, waiting for redirect...");
 
-      // Attendre la redirection vers /orders (membre par défaut)
-      await page.waitForURL("**/orders", { timeout: 10000 });
+      // Attendre la redirection (soit /orders pour membre, soit /admin/dashboard pour admin)
+      await page.waitForURL(/\/(orders|admin\/dashboard)/, { timeout: 10000 });
 
-      console.log("📍 Current URL:", page.url());
+      const currentURL = page.url();
+      console.log("📍 Current URL:", currentURL);
 
-      // Vérifier qu'on est bien sur la page des commandes
-      await expect(
-        page.getByRole("heading", { name: "Commandes" }),
-      ).toBeVisible();
-
-      // Récupérer l'ID utilisateur pour cleanup
+      // Récupérer l'utilisateur créé pour vérifier son rôle
       const { db } = await import("@/lib/db");
       const { user } = await import("@/lib/db/schema");
       const { eq } = await import("drizzle-orm");
@@ -55,6 +51,21 @@ test.describe("Authentication", () => {
         .where(eq(user.email, email))
         .limit(1);
       userId = createdUser?.id;
+
+      console.log("👤 User role:", createdUser?.role);
+
+      // Vérifier la redirection en fonction du rôle
+      if (createdUser?.role === "admin") {
+        expect(currentURL).toContain("/admin/dashboard");
+        await expect(
+          page.getByRole("heading", { name: "Dashboard Admin" }),
+        ).toBeVisible();
+      } else {
+        expect(currentURL).toContain("/orders");
+        await expect(
+          page.getByRole("heading", { name: "Commandes" }),
+        ).toBeVisible();
+      }
     } finally {
       // Nettoyer l'utilisateur créé
       if (userId) {
