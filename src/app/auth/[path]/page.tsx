@@ -15,8 +15,19 @@ export default async function AuthPage({
   const { path } = await params;
 
   return (
-    <main className="container flex grow flex-col items-center justify-center self-center p-4 md:p-6">
-      <AuthView path={path} />
+    <main className="container mx-auto p-6 flex grow flex-col items-center justify-center">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold tracking-tight">Grouped Order</h1>
+        <p className="mt-2 text-muted-foreground">
+          Commandes groupées Philibert
+        </p>
+      </div>
+      <AuthView
+        path={path}
+        classNames={{
+          base: "w-full max-w-md",
+        }}
+      />
     </main>
   );
 }
