@@ -41,7 +41,9 @@ test.describe("Authentication", () => {
       console.log("📍 Current URL:", page.url());
 
       // Vérifier qu'on est bien sur la page des commandes
-      await expect(page.getByRole("heading", { name: "Commandes" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Commandes" }),
+      ).toBeVisible();
 
       // Récupérer l'ID utilisateur pour cleanup
       const { db } = await import("@/lib/db");
@@ -78,6 +80,8 @@ test.describe("Authentication", () => {
     console.log("📍 Current URL:", page.url());
 
     // Vérifier qu'on est bien sur le dashboard admin
-    await expect(page.getByRole("heading", { name: "Dashboard Admin" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Dashboard Admin" }),
+    ).toBeVisible();
   });
 });

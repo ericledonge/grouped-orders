@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OrdersPage() {
-  const session = await auth.api.getSession({
+  const _session = await auth.api.getSession({
     headers: await headers(),
   });
 

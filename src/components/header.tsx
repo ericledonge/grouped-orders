@@ -1,12 +1,28 @@
 "use client";
 
-import { UserButton } from "@daveyplate/better-auth-ui";
-import { LayoutDashboardIcon, MenuIcon, PackageIcon } from "lucide-react";
+import { UserAvatar } from "@daveyplate/better-auth-ui";
+import {
+  LayoutDashboardIcon,
+  LogOutIcon,
+  MenuIcon,
+  PackageIcon,
+  SettingsIcon,
+  ShieldIcon,
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { authClient } from "@/lib/auth/auth-clients";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -33,6 +49,12 @@ const memberNav: NavItem[] = [
 interface HeaderProps {
   /** Rôle de l'utilisateur connecté */
   userRole?: string | null;
+  /** Données utilisateur pour l'avatar */
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  } | null;
 }
 
 function NavLinks({
@@ -71,11 +93,22 @@ function NavLinks({
   );
 }
 
-export function Header({ userRole }: HeaderProps) {
+export function Header({ userRole, user }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isAdmin = userRole === "admin";
   const navItems = isAdmin ? adminNav : memberNav;
   const [open, setOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+        },
+      },
+    });
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -93,9 +126,51 @@ export function Header({ userRole }: HeaderProps) {
         {/* Actions */}
         <div className="flex items-center gap-2">
           <ModeToggle />
-          <div className="hidden md:block">
-            <UserButton size="icon" />
-          </div>
+          {user && (
+            <>
+              {/* Desktop User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild className="hidden md:block">
+                  <button type="button" className="cursor-pointer">
+                    <UserAvatar user={user} className="size-9" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user.name || user.email}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {isAdmin ? "Admin" : "Membre"}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/settings" className="cursor-pointer">
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      Paramètres
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/security" className="cursor-pointer">
+                      <ShieldIcon className="mr-2 h-4 w-4" />
+                      Sécurité
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                  >
+                    <LogOutIcon className="mr-2 h-4 w-4" />
+                    Se déconnecter
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
 
           {/* Mobile Menu */}
           <Sheet open={open} onOpenChange={setOpen}>
@@ -119,14 +194,44 @@ export function Header({ userRole }: HeaderProps) {
                 </nav>
 
                 {/* Mobile User Actions */}
-                <div className="mt-6 flex items-center gap-2 border-t pt-4 px-2">
-                  <button
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    className="w-full"
-                  >
-                    <UserButton variant="ghost" />
-                  </button>
+                <div className="mt-6 border-t pt-4">
+                  <nav className="flex flex-col gap-2">
+                    <Link
+                      href="/account/settings"
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        pathname === "/account/settings"
+                          ? "bg-secondary text-secondary-foreground"
+                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      }`}
+                    >
+                      <SettingsIcon className="h-5 w-5" />
+                      Paramètres
+                    </Link>
+                    <Link
+                      href="/account/security"
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        pathname === "/account/security"
+                          ? "bg-secondary text-secondary-foreground"
+                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      }`}
+                    >
+                      <ShieldIcon className="h-5 w-5" />
+                      Sécurité
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false);
+                        handleSignOut();
+                      }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
+                    >
+                      <LogOutIcon className="h-5 w-5" />
+                      Se déconnecter
+                    </button>
+                  </nav>
                 </div>
               </div>
             </SheetContent>

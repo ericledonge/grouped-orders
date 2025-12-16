@@ -47,7 +47,7 @@ export default async function RootLayout({
       >
         <Providers>
           <SignedIn>
-            <Header userRole={session?.user.role} />
+            <Header userRole={session?.user.role} user={session?.user} />
           </SignedIn>
           {children}
         </Providers>

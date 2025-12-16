@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 export function CreateOrderForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const form = useForm<CreateOrderInput>({
     resolver: zodResolver(createOrderSchema),
@@ -119,12 +120,13 @@ export function CreateOrderForm() {
               control={form.control}
               name="targetDate"
               render={({ field }) => {
-                const [open, setOpen] = useState(false);
-
                 return (
                   <FormItem className="flex flex-col">
                     <FormLabel>Date cible</FormLabel>
-                    <Popover open={open} onOpenChange={setOpen}>
+                    <Popover
+                      open={datePickerOpen}
+                      onOpenChange={setDatePickerOpen}
+                    >
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -149,7 +151,7 @@ export function CreateOrderForm() {
                           selected={field.value}
                           onSelect={(date) => {
                             field.onChange(date);
-                            setOpen(false); // Fermer le popover après sélection
+                            setDatePickerOpen(false); // Fermer le popover après sélection
                           }}
                           disabled={(date) => date < startOfDay(new Date())}
                           initialFocus
