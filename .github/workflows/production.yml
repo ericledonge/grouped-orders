@@ -6,7 +6,9 @@ on:
 jobs:
   smoke-tests:
     # N'exécute que si le déploiement Vercel production a réussi
-    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Production'
+    # DISABLED: Current smoke tests create data in production database
+    # TODO: Create true read-only smoke tests before re-enabling
+    if: false && github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Production'
     timeout-minutes: 30
     runs-on: ubuntu-latest
 
