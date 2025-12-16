@@ -43,6 +43,11 @@ async function seedTestData() {
 
     if (response.ok) {
       console.log("✅ Test user created successfully!");
+
+      // Force the role to "user" in case Better Auth assigned "admin" to first user
+      await sql`UPDATE "user" SET role = 'user' WHERE email = 'test@example.com'`;
+      console.log("✅ Role explicitly set to 'user'");
+
       console.log("   Email: test@example.com");
       console.log("   Password: TestPassword123!");
     } else {
