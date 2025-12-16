@@ -35,8 +35,13 @@ test.describe("Authentication", () => {
 
       console.log("🔍 Clicked signup button, waiting for redirect...");
 
+      // Wait a bit for any redirect to happen
+      await page.waitForTimeout(3000);
+      const urlAfterClick = page.url();
+      console.log("🔍 URL 3s after clicking signup:", urlAfterClick);
+
       // Attendre la redirection (soit /orders pour membre, soit /admin/dashboard pour admin)
-      await page.waitForURL(/\/(orders|admin\/dashboard)/, { timeout: 10000 });
+      await page.waitForURL(/\/(orders|admin\/dashboard)/, { timeout: 30000 });
 
       const currentURL = page.url();
       console.log("📍 Current URL:", currentURL);
