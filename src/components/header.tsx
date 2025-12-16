@@ -120,7 +120,13 @@ export function Header({ userRole }: HeaderProps) {
 
                 {/* Mobile User Actions */}
                 <div className="mt-6 flex items-center gap-2 border-t pt-4 px-2">
-                  <UserButton variant="ghost" />
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="w-full"
+                  >
+                    <UserButton variant="ghost" />
+                  </button>
                 </div>
               </div>
             </SheetContent>
