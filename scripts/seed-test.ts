@@ -11,13 +11,18 @@ async function seedTestData() {
   }
 
   try {
-    // Delete existing test user to ensure fresh user with correct default role
+    // Delete existing test user and sessions to ensure fresh user with correct default role
     const { neon } = await import("@neondatabase/serverless");
     const sql = neon(databaseUrl);
 
-    console.log("🗑️  Deleting existing test user...");
+    console.log("🗑️  Deleting existing test user and sessions...");
+    // Delete sessions first (foreign key constraint)
+    await sql`DELETE FROM "session" WHERE user_id IN (SELECT id FROM "user" WHERE email = 'test@example.com')`;
+    // Delete accounts (foreign key constraint)
+    await sql`DELETE FROM "account" WHERE user_id IN (SELECT id FROM "user" WHERE email = 'test@example.com')`;
+    // Delete user
     await sql`DELETE FROM "user" WHERE email = 'test@example.com'`;
-    console.log("✅ Existing test user deleted");
+    console.log("✅ Existing test user and sessions deleted");
 
     // Create new test user
     const response = await fetch(`${baseURL}/api/auth/sign-up/email`, {
@@ -47,6 +52,10 @@ async function seedTestData() {
       // Force the role to "user" in case Better Auth assigned "admin" to first user
       await sql`UPDATE "user" SET role = 'user' WHERE email = 'test@example.com'`;
       console.log("✅ Role explicitly set to 'user'");
+
+      // Delete the session created during signup (it might have cached the old role)
+      await sql`DELETE FROM "session" WHERE user_id IN (SELECT id FROM "user" WHERE email = 'test@example.com')`;
+      console.log("✅ Signup session deleted (test will create fresh session)");
 
       console.log("   Email: test@example.com");
       console.log("   Password: TestPassword123!");
