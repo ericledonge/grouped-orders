@@ -21,35 +21,44 @@ async function seedTestData() {
 
     console.log(`📊 Current user count in database: ${userCount}`);
 
-    // If database is empty, create a dummy first user to claim the "admin" role
+    // Clean up all existing users to ensure fresh state for tests
+    if (userCount > 0) {
+      console.log("🗑️  Cleaning up existing users for fresh test environment...");
+      // Delete in correct order to respect foreign key constraints
+      await sql`DELETE FROM "session"`;
+      await sql`DELETE FROM "account"`;
+      await sql`DELETE FROM "verification"`;
+      // Delete orders first (references users via created_by)
+      await sql`DELETE FROM "order"`;
+      await sql`DELETE FROM "user"`;
+      console.log(`✅ Deleted ${userCount} existing users and related data`);
+    }
+
+    // Create a dummy first user to claim the "admin" role
     // This ensures subsequent test users get the default "user" role
-    if (userCount === 0) {
+    console.log(
+      "🎯 Creating dummy first user to claim admin role...",
+    );
+
+    const dummyResponse = await fetch(`${baseURL}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "first-user-dummy@example.com",
+        password: "DummyPassword123!",
+        name: "First User (Dummy)",
+      }),
+    });
+
+    if (dummyResponse.ok) {
       console.log(
-        "🎯 Database is empty, creating dummy first user to claim admin role...",
+        "✅ Dummy first user created (will automatically get admin role)",
       );
-
-      const dummyResponse = await fetch(`${baseURL}/api/auth/sign-up/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: "first-user-dummy@example.com",
-          password: "DummyPassword123!",
-          name: "First User (Dummy)",
-        }),
-      });
-
-      if (dummyResponse.ok) {
-        console.log(
-          "✅ Dummy first user created (will automatically get admin role)",
-        );
-      } else {
-        const errorData = await dummyResponse.json();
-        console.error("❌ Failed to create dummy first user");
-        console.error("Response:", JSON.stringify(errorData, null, 2));
-        process.exit(1);
-      }
     } else {
-      console.log("ℹ️  Database already has users, skipping dummy user creation");
+      const errorData = await dummyResponse.json();
+      console.error("❌ Failed to create dummy first user");
+      console.error("Response:", JSON.stringify(errorData, null, 2));
+      process.exit(1);
     }
 
     console.log("✅ Seed completed! Tests can now create users with default 'user' role");
