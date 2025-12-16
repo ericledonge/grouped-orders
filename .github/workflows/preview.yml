@@ -133,8 +133,8 @@ jobs:
           fi
           echo "DATABASE_URL is set correctly"
 
-      - name: Push schema to Neon preview database
-        run: npx drizzle-kit push
+      - name: Apply database migrations to Neon preview
+        run: npx drizzle-kit migrate
         env:
           DATABASE_URL: ${{ steps.get-db-url.outputs.database_url }}
 
