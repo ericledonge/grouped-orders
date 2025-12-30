@@ -1,45 +1,67 @@
 async function seedTestData() {
   const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+  const databaseUrl = process.env.DATABASE_URL;
 
   console.log("🌱 Seeding test data...");
   console.log(`   Using URL: ${baseURL}`);
 
+  if (!databaseUrl) {
+    console.error("❌ DATABASE_URL environment variable is not set");
+    process.exit(1);
+  }
+
   try {
-    const response = await fetch(`${baseURL}/api/auth/sign-up/email`, {
+    const { neon } = await import("@neondatabase/serverless");
+    const sql = neon(databaseUrl);
+
+    // Check if database already has users
+    const existingUsers =
+      await sql`SELECT COUNT(*) as count FROM "user" LIMIT 1`;
+    const userCount = Number(existingUsers[0]?.count || 0);
+
+    console.log(`📊 Current user count in database: ${userCount}`);
+
+    // Clean up all existing users to ensure fresh state for tests
+    if (userCount > 0) {
+      console.log("🗑️  Cleaning up existing users for fresh test environment...");
+      // Delete in correct order to respect foreign key constraints
+      await sql`DELETE FROM "session"`;
+      await sql`DELETE FROM "account"`;
+      await sql`DELETE FROM "verification"`;
+      // Delete orders first (references users via created_by)
+      await sql`DELETE FROM "order"`;
+      await sql`DELETE FROM "user"`;
+      console.log(`✅ Deleted ${userCount} existing users and related data`);
+    }
+
+    // Create a dummy first user to claim the "admin" role
+    // This ensures subsequent test users get the default "user" role
+    console.log(
+      "🎯 Creating dummy first user to claim admin role...",
+    );
+
+    const dummyResponse = await fetch(`${baseURL}/api/auth/sign-up/email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: "test@example.com",
-        password: "TestPassword123!",
-        name: "Test User",
+        email: "first-user-dummy@example.com",
+        password: "DummyPassword123!",
+        name: "First User (Dummy)",
       }),
     });
 
-    const contentType = response.headers.get("content-type");
-
-    if (!contentType?.includes("application/json")) {
-      console.error("❌ Server returned non-JSON response");
-      console.error(`   Status: ${response.status}`);
-      console.error(`   Content-Type: ${contentType}`);
-      const text = await response.text();
-      console.error(`   Body preview: ${text.substring(0, 200)}...`);
-      process.exit(1);
-    }
-
-    if (response.ok) {
-      console.log("✅ Test user created successfully!");
-      console.log("   Email: test@example.com");
-      console.log("   Password: TestPassword123!");
-    } else if (response.status === 400 || response.status === 422) {
-      console.log("✅ Test user already exists");
-      console.log("   Email: test@example.com");
-      console.log("   Password: TestPassword123!");
+    if (dummyResponse.ok) {
+      console.log(
+        "✅ Dummy first user created (will automatically get admin role)",
+      );
     } else {
-      const data = await response.json();
-      console.error("❌ Unexpected error:", response.status);
-      console.error("Response:", JSON.stringify(data, null, 2));
+      const errorData = await dummyResponse.json();
+      console.error("❌ Failed to create dummy first user");
+      console.error("Response:", JSON.stringify(errorData, null, 2));
       process.exit(1);
     }
+
+    console.log("✅ Seed completed! Tests can now create users with default 'user' role");
   } catch (error) {
     console.error("❌ Error seeding test data:", error);
     process.exit(1);

@@ -32,5 +32,10 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-  plugins: [admin(), nextCookies()],
+  plugins: [
+    admin({
+      defaultRole: "user", // Nouveaux utilisateurs sont des membres par défaut
+    }),
+    nextCookies(),
+  ],
 });
