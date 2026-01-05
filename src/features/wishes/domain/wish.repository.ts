@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { wish } from "@/lib/db/schema";
 import type { NewWish } from "./wish.types";
@@ -82,5 +82,35 @@ export const wishRepository = {
    */
   async delete(id: string) {
     await db.delete(wish).where(eq(wish.id, id));
+  },
+
+  /**
+   * Compte le nombre de souhaits en attente (status = 'submitted')
+   * @returns Le nombre de souhaits soumis
+   */
+  async countSubmittedWishes() {
+    const [result] = await db
+      .select({ count: count() })
+      .from(wish)
+      .where(eq(wish.status, "submitted"));
+
+    return result?.count ?? 0;
+  },
+
+  /**
+   * Récupère les derniers souhaits soumis avec les informations utilisateur et commande
+   * @param limit - Nombre de souhaits à récupérer (défaut: 5)
+   * @returns Liste des derniers souhaits soumis
+   */
+  async findRecentSubmittedWithDetails(limit = 5) {
+    return db.query.wish.findMany({
+      where: eq(wish.status, "submitted"),
+      with: {
+        user: true,
+        order: true,
+      },
+      orderBy: [desc(wish.createdAt)],
+      limit,
+    });
   },
 };
