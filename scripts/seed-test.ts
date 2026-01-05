@@ -23,7 +23,9 @@ async function seedTestData() {
 
     // Clean up all existing users to ensure fresh state for tests
     if (userCount > 0) {
-      console.log("🗑️  Cleaning up existing users for fresh test environment...");
+      console.log(
+        "🗑️  Cleaning up existing users for fresh test environment...",
+      );
       // Delete in correct order to respect foreign key constraints
       await sql`DELETE FROM "session"`;
       await sql`DELETE FROM "account"`;
@@ -36,9 +38,7 @@ async function seedTestData() {
 
     // Create a dummy first user to claim the "admin" role
     // This ensures subsequent test users get the default "user" role
-    console.log(
-      "🎯 Creating dummy first user to claim admin role...",
-    );
+    console.log("🎯 Creating dummy first user to claim admin role...");
 
     const dummyResponse = await fetch(`${baseURL}/api/auth/sign-up/email`, {
       method: "POST",
@@ -61,7 +61,9 @@ async function seedTestData() {
       process.exit(1);
     }
 
-    console.log("✅ Seed completed! Tests can now create users with default 'user' role");
+    console.log(
+      "✅ Seed completed! Tests can now create users with default 'user' role",
+    );
   } catch (error) {
     console.error("❌ Error seeding test data:", error);
     process.exit(1);

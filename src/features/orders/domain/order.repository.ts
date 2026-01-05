@@ -1,6 +1,6 @@
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { order } from "@/lib/db/schema";
+import { order, wish } from "@/lib/db/schema";
 
 /**
  * Type pour les données de création d'une commande
@@ -53,9 +53,49 @@ export const orderRepository = {
 
   /**
    * Liste toutes les commandes
-   * @returns Toutes les commandes, triées par date de création décroissante
+   * @returns Toutes les commandes, triées par date cible décroissante
    */
   async findAll() {
-    return db.select().from(order).orderBy(desc(order.createdAt));
+    return db.select().from(order).orderBy(desc(order.targetDate));
+  },
+
+  /**
+   * Liste toutes les commandes avec le nombre de souhaits
+   * @returns Commandes avec wishCount, triées par date cible décroissante
+   */
+  async findAllWithWishCount() {
+    const orders = await db
+      .select()
+      .from(order)
+      .orderBy(desc(order.targetDate));
+
+    // Pour chaque commande, compter les souhaits
+    const ordersWithCount = await Promise.all(
+      orders.map(async (o) => {
+        const [result] = await db
+          .select({ count: count() })
+          .from(wish)
+          .where(eq(wish.orderId, o.id));
+
+        return {
+          ...o,
+          wishCount: result?.count ?? 0,
+        };
+      }),
+    );
+
+    return ordersWithCount;
+  },
+
+  /**
+   * Liste les commandes ouvertes (status = "open")
+   * @returns Commandes ouvertes, triées par date cible croissante
+   */
+  async findOpenOrders() {
+    return db
+      .select()
+      .from(order)
+      .where(eq(order.status, "open"))
+      .orderBy(order.targetDate);
   },
 };
