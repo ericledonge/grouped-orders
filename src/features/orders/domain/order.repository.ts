@@ -98,4 +98,23 @@ export const orderRepository = {
       .where(eq(order.status, "open"))
       .orderBy(order.targetDate);
   },
+
+  /**
+   * Récupère une commande avec ses souhaits et les utilisateurs associés
+   * @param id - L'ID de la commande
+   * @returns La commande avec ses souhaits ou undefined si non trouvée
+   */
+  async findByIdWithWishes(id: string) {
+    return db.query.order.findFirst({
+      where: eq(order.id, id),
+      with: {
+        wishes: {
+          with: {
+            user: true,
+          },
+          orderBy: (wish, { desc }) => [desc(wish.createdAt)],
+        },
+      },
+    });
+  },
 };
