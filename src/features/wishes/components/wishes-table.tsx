@@ -108,5 +108,3 @@ export function WishesTable({ wishes }: WishesTableProps) {
     </Card>
   );
 }
-
-

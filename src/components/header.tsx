@@ -2,6 +2,7 @@
 
 import { UserAvatar } from "@daveyplate/better-auth-ui";
 import {
+  HeartIcon,
   LayoutDashboardIcon,
   LogOutIcon,
   MenuIcon,
@@ -44,6 +45,7 @@ const adminNav: NavItem[] = [
 
 const memberNav: NavItem[] = [
   { label: "Commandes", href: "/orders", icon: PackageIcon },
+  { label: "Mes souhaits", href: "/my-wishes", icon: HeartIcon },
 ];
 
 interface HeaderProps {

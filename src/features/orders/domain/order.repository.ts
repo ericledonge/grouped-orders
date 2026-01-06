@@ -117,4 +117,24 @@ export const orderRepository = {
       },
     });
   },
+
+  /**
+   * Met à jour une commande existante
+   * @param id - L'ID de la commande à mettre à jour
+   * @param data - Les données à mettre à jour
+   * @returns La commande mise à jour ou undefined si non trouvée
+   */
+  async update(id: string, data: Partial<Omit<CreateOrderData, "createdBy">>) {
+    const [updatedOrder] = await db
+      .update(order)
+      .set({
+        type: data.type,
+        targetDate: data.targetDate,
+        description: data.description,
+      })
+      .where(eq(order.id, id))
+      .returning();
+
+    return updatedOrder;
+  },
 };

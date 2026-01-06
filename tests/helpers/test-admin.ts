@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { order, user } from "@/lib/db/schema";
+import { order, user, wish } from "@/lib/db/schema";
 
 // Délai entre les créations pour éviter le rate limiting
 let lastCreationTime = 0;
@@ -99,13 +99,100 @@ export async function createTestAdmin() {
  * @param userId - L'ID de l'utilisateur à supprimer
  */
 export async function cleanupTestUser(userId: string) {
-  // Supprimer d'abord les commandes créées par cet utilisateur
+  // Supprimer d'abord les souhaits créés par cet utilisateur
+  await db.delete(wish).where(eq(wish.userId, userId));
+
+  // Supprimer les commandes créées par cet utilisateur
   // (les wishes sont supprimées en cascade grâce au FK order_id)
   await db.delete(order).where(eq(order.createdBy, userId));
 
   // Ensuite supprimer l'utilisateur
   // (account et session sont supprimées en cascade grâce aux FK)
   await db.delete(user).where(eq(user.id, userId));
+}
+
+/**
+ * Crée un utilisateur membre (non-admin) de test unique pour les tests E2E
+ *
+ * @returns Les credentials du membre créé
+ */
+export async function createTestMember() {
+  // Attendre si nécessaire pour éviter le rate limiting
+  const now = Date.now();
+  const timeSinceLastCreation = now - lastCreationTime;
+  if (timeSinceLastCreation < MIN_DELAY_BETWEEN_CREATIONS) {
+    const delay = MIN_DELAY_BETWEEN_CREATIONS - timeSinceLastCreation;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+  lastCreationTime = Date.now();
+
+  const timestamp = Date.now();
+  const email = `test-member-${timestamp}@example.com`;
+  const password = "TestMember123!";
+  const name = `Test Member ${timestamp}`;
+
+  const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+
+  // 1. Créer l'utilisateur via l'API Better Auth avec retry en cas de rate limiting
+  let response: Response | null = null;
+  let attempt = 0;
+  const maxAttempts = 3;
+
+  while (attempt < maxAttempts) {
+    response = await fetch(`${baseURL}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+      }),
+    });
+
+    // Si succès, sortir de la boucle
+    if (response.ok) break;
+
+    // Si rate limiting (429), attendre et réessayer
+    if (response.status === 429 && attempt < maxAttempts - 1) {
+      const waitTime = (attempt + 1) * 3000; // 3s, 6s, 9s
+      console.log(
+        `⏳ Rate limited, waiting ${waitTime}ms before retry ${attempt + 1}/${maxAttempts - 1}...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      attempt++;
+      continue;
+    }
+
+    // Autre erreur, lever l'exception
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      `Failed to create test member: ${response.status} ${response.statusText}\n${JSON.stringify(errorData, null, 2)}`,
+    );
+  }
+
+  if (!response || !response.ok) {
+    const errorData = response ? await response.json().catch(() => ({})) : {};
+    throw new Error(
+      `Failed to create test member after ${maxAttempts} attempts: ${response?.status || "unknown"} ${response?.statusText || ""}\n${JSON.stringify(errorData, null, 2)}`,
+    );
+  }
+
+  const data = await response.json();
+  const userId = data.user?.id;
+
+  if (!userId) {
+    throw new Error("No user ID returned from sign-up");
+  }
+
+  // 2. Vérifier l'email du membre (pour permettre la connexion)
+  await db.update(user).set({ emailVerified: true }).where(eq(user.id, userId));
+
+  return {
+    email,
+    password,
+    userId,
+    name,
+  };
 }
 
 /**

@@ -89,10 +89,10 @@ test.describe("Admin - Liste des commandes", () => {
     // Retourner à la liste
     await page.goto("/admin/orders");
 
-    // Vérifier que la commande apparaît dans la liste
-    await expect(page.getByText("Mensuelle")).toBeVisible();
+    // Vérifier que la commande apparaît dans la liste (au moins une visible)
+    await expect(page.getByText("Mensuelle").first()).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Voir détails" }),
+      page.getByRole("link", { name: "Voir détails" }).first(),
     ).toBeVisible();
   });
 });

@@ -32,3 +32,12 @@ export async function requireAdmin() {
 
   return session;
 }
+
+/**
+ * Vérifie qu'un utilisateur est authentifié (membre ou admin)
+ * @throws Error si pas de session
+ * @returns La session de l'utilisateur
+ */
+export async function requireMember() {
+  return requireSession();
+}

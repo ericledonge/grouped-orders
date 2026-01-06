@@ -9,5 +9,3 @@ export const WISH_STATUS_LABELS = {
   paid: "Payé",
   picked_up: "Récupéré",
 } as const;
-
-

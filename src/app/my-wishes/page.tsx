@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { MyWishesTable } from "@/features/wishes/components/my-wishes-table";
+import { wishRepository } from "@/features/wishes/domain/wish.repository";
+import { requireMember } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Mes souhaits - Grouped Order",
@@ -8,27 +11,24 @@ export const metadata: Metadata = {
 };
 
 export default async function MyWishesPage() {
-  const _session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await requireMember();
+  const wishes = await wishRepository.findByUserIdWithOrder(session.user.id);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Mes souhaits</h1>
-        <p className="text-muted-foreground">
-          Suivez l'avancement de vos souhaits de jeux
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Mes souhaits</h1>
+          <p className="text-muted-foreground">
+            Suivez l'avancement de vos souhaits de jeux
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/orders">Voir les commandes</Link>
+        </Button>
       </div>
 
-      <div className="rounded-lg border bg-card p-12 text-center space-y-4">
-        <p className="text-muted-foreground">
-          Vous n'avez pas encore émis de souhaits.
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Consultez les commandes ouvertes pour ajouter vos jeux favoris.
-        </p>
-      </div>
+      <MyWishesTable wishes={wishes} />
     </div>
   );
 }

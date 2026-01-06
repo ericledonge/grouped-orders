@@ -35,5 +35,3 @@ export function WishStatusBadge({ status, className }: WishStatusBadgeProps) {
     </span>
   );
 }
-
-
