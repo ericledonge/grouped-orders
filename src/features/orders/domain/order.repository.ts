@@ -137,4 +137,17 @@ export const orderRepository = {
 
     return updatedOrder;
   },
+
+  /**
+   * Compte le nombre de commandes ouvertes
+   * @returns Le nombre de commandes avec status = 'open'
+   */
+  async countOpenOrders() {
+    const [result] = await db
+      .select({ count: count() })
+      .from(order)
+      .where(eq(order.status, "open"));
+
+    return result?.count ?? 0;
+  },
 };

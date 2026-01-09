@@ -12,7 +12,7 @@ import {
 } from "@/features/orders/components/order-badges";
 import { ORDER_TYPE_LABELS } from "@/features/orders/domain/order.labels";
 import { orderRepository } from "@/features/orders/domain/order.repository";
-import { WishesTable } from "@/features/wishes/components/wishes-table";
+import { WishesTableWithFilter } from "@/features/wishes/components/wishes-table-with-filter";
 
 export const metadata: Metadata = {
   title: "Détails de la commande - Admin - Grouped Order",
@@ -133,8 +133,8 @@ export default async function OrderDetailPage({
         </Card>
       </div>
 
-      {/* Liste des souhaits */}
-      <WishesTable wishes={order.wishes} />
+      {/* Liste des souhaits avec filtres */}
+      <WishesTableWithFilter wishes={order.wishes} />
     </div>
   );
 }
