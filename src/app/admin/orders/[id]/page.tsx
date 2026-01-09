@@ -1,69 +1,140 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ArrowLeftIcon, PencilIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  OrderStatusBadge,
+  OrderTypeBadge,
+} from "@/features/orders/components/order-badges";
 import { ORDER_TYPE_LABELS } from "@/features/orders/domain/order.labels";
 import { orderRepository } from "@/features/orders/domain/order.repository";
+import { WishesTable } from "@/features/wishes/components/wishes-table";
+
+export const metadata: Metadata = {
+  title: "Détails de la commande - Admin - Grouped Order",
+  description: "Voir les détails d'une commande groupée",
+};
+
+interface OrderDetailPageProps {
+  params: Promise<{ id: string }>;
+}
 
 export default async function OrderDetailPage({
   params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+}: OrderDetailPageProps) {
   const { id } = await params;
-  const order = await orderRepository.findById(id);
+  const order = await orderRepository.findByIdWithWishes(id);
 
   if (!order) {
     notFound();
   }
 
+  // Calculer les statistiques des souhaits par statut
+  const wishStats = order.wishes.reduce(
+    (acc, wish) => {
+      acc[wish.status] = (acc[wish.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
   return (
-    <div className="container mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Commande {ORDER_TYPE_LABELS[order.type]}</CardTitle>
-        </CardHeader>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Navigation */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/admin/orders">
+            <ArrowLeftIcon className="mr-2 h-4 w-4" />
+            Retour aux commandes
+          </Link>
+        </Button>
+      </div>
 
-        <CardContent className="space-y-4">
-          <dl className="grid grid-cols-1 gap-4">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Type
-              </dt>
-              <dd className="text-base">{ORDER_TYPE_LABELS[order.type]}</dd>
-            </div>
-
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Date cible
-              </dt>
-              <dd className="text-base">
-                {format(order.targetDate, "PPP", { locale: fr })}
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Statut
-              </dt>
-              <dd className="text-base">{order.status}</dd>
-            </div>
-
-            {order.description && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Description
-                </dt>
-                <dd className="text-base">{order.description}</dd>
-              </div>
-            )}
-          </dl>
-
-          <p className="mt-6 text-sm text-muted-foreground italic">
-            Page de détail en cours de développement
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Commande {ORDER_TYPE_LABELS[order.type]}
+            </h1>
+            <OrderTypeBadge type={order.type} />
+            <OrderStatusBadge status={order.status} />
+          </div>
+          <p className="text-muted-foreground">
+            Date cible : {format(order.targetDate, "PPP", { locale: fr })}
           </p>
-        </CardContent>
-      </Card>
+          {order.description && (
+            <p className="text-sm text-muted-foreground">{order.description}</p>
+          )}
+        </div>
+
+        <Button variant="outline" asChild>
+          <Link href={`/admin/orders/${id}/edit`}>
+            <PencilIcon className="mr-2 h-4 w-4" />
+            Éditer
+          </Link>
+        </Button>
+      </div>
+
+      {/* Statistiques */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total souhaits
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{order.wishes.length}</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Soumis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-blue-600">
+              {wishStats.submitted || 0}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Validés
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-green-600">
+              {wishStats.validated || 0}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Récupérés
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-gray-600">
+              {wishStats.picked_up || 0}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Liste des souhaits */}
+      <WishesTable wishes={order.wishes} />
     </div>
   );
 }
