@@ -40,6 +40,7 @@ interface WishWithUser {
 
 interface WishesTableWithFilterProps {
   wishes: WishWithUser[];
+  orderId?: string;
 }
 
 const ALL_STATUSES = "all";
