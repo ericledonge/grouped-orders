@@ -5,6 +5,8 @@ import { basketRepository } from "../domain/basket.repository";
 import { wishRepository } from "@/features/wishes/domain/wish.repository";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminRepository } from "@/features/notifications/domain/admin.repository";
+import { notificationService } from "@/features/notifications/domain/notification.service";
 
 export interface ValidateWishesState {
   success: boolean;
@@ -79,17 +81,20 @@ export async function validateWishesAction(
       }
     }
 
+    // Collecter les refus pour notification aux admins
+    const refusedWishes: Array<{ gameName: string }> = [];
+
     // Mettre à jour les souhaits
     for (const validation of validations) {
       const newStatus = validation.action === "validate" ? "validated" : "refused";
       
       // Calculer le montant dû si validé
-      const wish = await wishRepository.findById(validation.wishId);
-      if (!wish) continue;
+      const wishData = await wishRepository.findById(validation.wishId);
+      if (!wishData) continue;
 
-      const unitPrice = wish.unitPrice ? Number.parseFloat(wish.unitPrice) : 0;
-      const shippingShare = wish.shippingShare ? Number.parseFloat(wish.shippingShare) : 0;
-      const customsShare = wish.customsShare ? Number.parseFloat(wish.customsShare) : 0;
+      const unitPrice = wishData.unitPrice ? Number.parseFloat(wishData.unitPrice) : 0;
+      const shippingShare = wishData.shippingShare ? Number.parseFloat(wishData.shippingShare) : 0;
+      const customsShare = wishData.customsShare ? Number.parseFloat(wishData.customsShare) : 0;
       const amountDue = validation.action === "validate" 
         ? (unitPrice + shippingShare + customsShare).toFixed(2)
         : "0";
@@ -97,7 +102,28 @@ export async function validateWishesAction(
       await wishRepository.update(validation.wishId, {
         status: newStatus,
         amountDue: validation.action === "validate" ? amountDue : null,
+        paymentStatus: validation.action === "validate" ? "pending" : undefined,
       });
+
+      if (validation.action === "refuse") {
+        refusedWishes.push({ gameName: wishData.gameName });
+      }
+    }
+
+    // Notifier les admins des souhaits refusés
+    if (refusedWishes.length > 0) {
+      try {
+        const adminIds = await adminRepository.findAllAdminIds();
+        for (const refusedWish of refusedWishes) {
+          await notificationService.notifyAdmins(adminIds, "wish_refused", {
+            userName: session.user.name || session.user.email || "Un membre",
+            gameName: refusedWish.gameName,
+            basketId,
+          });
+        }
+      } catch (notifError) {
+        console.error("Erreur lors de l'envoi des notifications:", notifError);
+      }
     }
 
     // Revalider les pages

@@ -101,6 +101,7 @@ export const wishRepository = {
       amountDue: string | null;
       amountPaid: string | null;
       depositPointId: string | null;
+      paymentStatus: "pending" | "sent" | "received" | "partial";
     }>,
   ) {
     const [updatedWish] = await db
@@ -110,6 +111,20 @@ export const wishRepository = {
       .returning();
 
     return updatedWish;
+  },
+
+  /**
+   * Récupère les souhaits d'un panier avec les informations utilisateur
+   * @param basketId - L'ID du panier
+   * @returns Liste des souhaits avec les détails de l'utilisateur
+   */
+  async findByBasketIdWithUser(basketId: string) {
+    return db.query.wish.findMany({
+      where: eq(wish.basketId, basketId),
+      with: {
+        user: true,
+      },
+    });
   },
 
   /**

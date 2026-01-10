@@ -17,6 +17,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth/auth-clients";
+import { NotificationCenter } from "@/features/notifications/components/notification-center";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
 import {
@@ -63,6 +64,8 @@ interface HeaderProps {
     email?: string | null;
     image?: string | null;
   } | null;
+  /** ID de l'utilisateur pour les notifications */
+  userId?: string | null;
 }
 
 function NavLinks({
@@ -101,7 +104,7 @@ function NavLinks({
   );
 }
 
-export function Header({ userRole, user }: HeaderProps) {
+export function Header({ userRole, user, userId }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAdmin = userRole === "admin";
@@ -133,6 +136,7 @@ export function Header({ userRole, user }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {userId && <NotificationCenter userId={userId} />}
           <ModeToggle />
           {user && (
             <>

@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { wish } from "@/lib/db/schema";
+import { wish, basket } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { notificationService } from "@/features/notifications/domain/notification.service";
 
 export interface ConfirmPaymentState {
   success: boolean;
@@ -40,6 +41,19 @@ export async function confirmPaymentReceivedAction(
       };
     }
 
+    // Récupérer le panier pour les notifications
+    const [basketData] = await db
+      .select({ name: basket.name })
+      .from(basket)
+      .where(eq(basket.id, basketId))
+      .limit(1);
+
+    // Calculer le montant total
+    const totalAmount = memberWishes.reduce(
+      (sum, w) => sum + (w.amountDue ? Number.parseFloat(w.amountDue) : 0),
+      0,
+    );
+
     // Marquer tous les souhaits comme payés
     const now = new Date();
     for (const w of memberWishes) {
@@ -52,6 +66,17 @@ export async function confirmPaymentReceivedAction(
           amountPaid: amountDue.toFixed(2),
         })
         .where(eq(wish.id, w.id));
+    }
+
+    // Notifier le membre de la confirmation du paiement
+    try {
+      await notificationService.createNotification(userId, "payment_received", {
+        amount: totalAmount.toFixed(2),
+        basketName: basketData?.name || basketId,
+        basketId,
+      });
+    } catch (notifError) {
+      console.error("Erreur lors de l'envoi de la notification:", notifError);
     }
 
     // Revalider les pages

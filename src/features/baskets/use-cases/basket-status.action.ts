@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { basketRepository } from "../domain/basket.repository";
 import { requireAdmin } from "@/lib/auth/session";
+import { notificationService } from "@/features/notifications/domain/notification.service";
+import { wishRepository } from "@/features/wishes/domain/wish.repository";
 import type { BasketStatus } from "../domain/basket.types";
 
 export interface BasketStatusActionState {
@@ -40,6 +42,20 @@ export async function markBasketAsReceivedAction(
       status: "awaiting_delivery",
       receivedAt: new Date(),
     });
+
+    // Notifier les membres concernés que le colis est réceptionné
+    try {
+      const wishes = await wishRepository.findByBasketIdWithUser(basketId);
+      const userIds = [...new Set(wishes.map((w) => w.userId))] as string[];
+
+      await notificationService.createNotificationsForUsers(
+        userIds,
+        "basket_received",
+        { basketName: basket.name || basketId },
+      );
+    } catch (notifError) {
+      console.error("Erreur lors de l'envoi des notifications:", notifError);
+    }
 
     // Revalider les pages
     revalidatePath(`/admin/baskets/${basketId}`);
@@ -87,11 +103,26 @@ export async function markBasketAsAvailableAction(
       availableAt: new Date(),
     });
 
+    // Notifier les membres que leurs jeux sont disponibles au retrait
+    try {
+      const wishes = await wishRepository.findByBasketIdWithUser(basketId);
+      const userIds = [...new Set(wishes.map((w) => w.userId))] as string[];
+
+      await notificationService.createNotificationsForUsers(
+        userIds,
+        "pickup_available",
+        { basketName: basket.name || basketId },
+      );
+    } catch (notifError) {
+      console.error("Erreur lors de l'envoi des notifications:", notifError);
+    }
+
     // Revalider les pages
     revalidatePath(`/admin/baskets/${basketId}`);
     revalidatePath(`/admin/orders/${basket.orderId}`);
     revalidatePath("/admin/dashboard");
     revalidatePath("/my-baskets");
+    revalidatePath("/my-pickups");
 
     return { success: true };
   } catch (error) {

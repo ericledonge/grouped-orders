@@ -3,9 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { wish } from "@/lib/db/schema";
+import { wish, basket } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminRepository } from "@/features/notifications/domain/admin.repository";
+import { notificationService } from "@/features/notifications/domain/notification.service";
 
 export interface MarkPaymentSentState {
   success: boolean;
@@ -50,6 +52,19 @@ export async function markPaymentSentAction(
       };
     }
 
+    // Récupérer le panier pour les notifications
+    const [basketData] = await db
+      .select({ name: basket.name })
+      .from(basket)
+      .where(eq(basket.id, basketId))
+      .limit(1);
+
+    // Calculer le montant total envoyé
+    const totalAmount = validatedWishes.reduce(
+      (sum, w) => sum + (w.amountDue ? Number.parseFloat(w.amountDue) : 0),
+      0,
+    );
+
     // Mettre à jour tous les souhaits validés avec le statut de paiement
     const now = new Date();
     for (const w of validatedWishes) {
@@ -60,6 +75,19 @@ export async function markPaymentSentAction(
           paymentSentAt: now,
         })
         .where(eq(wish.id, w.id));
+    }
+
+    // Notifier les admins du paiement envoyé
+    try {
+      const adminIds = await adminRepository.findAllAdminIds();
+      await notificationService.notifyAdmins(adminIds, "payment_sent", {
+        userName: session.user.name || session.user.email || "Un membre",
+        amount: totalAmount.toFixed(2),
+        basketName: basketData?.name || basketId,
+        basketId,
+      });
+    } catch (notifError) {
+      console.error("Erreur lors de l'envoi des notifications:", notifError);
     }
 
     // Revalider les pages

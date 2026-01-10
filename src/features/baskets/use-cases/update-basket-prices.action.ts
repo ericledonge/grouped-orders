@@ -10,6 +10,7 @@ import {
   calculateProrataShares,
   calculateAmountDue,
 } from "../domain/basket.service";
+import { notificationService } from "@/features/notifications/domain/notification.service";
 
 export type UpdateBasketPricesState = {
   success: boolean;
@@ -202,8 +203,24 @@ export async function submitBasketForValidationAction(
         .where(eq(wish.id, w.id));
     }
 
+    // Notifier les membres concernés que le panier est prêt pour validation
+    try {
+      const userIds = [...new Set(basketWithWishes.wishes.map((w) => w.userId))];
+      await notificationService.createNotificationsForUsers(
+        userIds,
+        "basket_ready",
+        {
+          basketName: basketWithWishes.name || basketId,
+          basketId,
+        },
+      );
+    } catch (notifError) {
+      console.error("Erreur lors de l'envoi des notifications:", notifError);
+    }
+
     revalidatePath(`/admin/baskets/${basketId}`);
     revalidatePath(`/admin/orders/${basketWithWishes.orderId}`);
+    revalidatePath("/my-baskets");
 
     return { success: true };
   } catch (error) {

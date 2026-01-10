@@ -89,6 +89,30 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "partial",
 ]);
 
+/**
+ * Type de notification
+ * - wish_submitted: Nouveau souhait soumis (pour admin)
+ * - basket_ready: Panier prêt pour validation (pour membre)
+ * - wish_validated: Souhait validé (pour membre)
+ * - wish_refused: Souhait refusé (pour membre)
+ * - payment_sent: Paiement envoyé (pour admin)
+ * - payment_received: Paiement confirmé (pour membre)
+ * - basket_received: Panier réceptionné (pour membre)
+ * - pickup_available: Jeux disponibles au retrait (pour membre)
+ * - wish_picked_up: Jeu récupéré (pour admin)
+ */
+export const notificationTypeEnum = pgEnum("notification_type", [
+  "wish_submitted",
+  "basket_ready",
+  "wish_validated",
+  "wish_refused",
+  "payment_sent",
+  "payment_received",
+  "basket_received",
+  "pickup_available",
+  "wish_picked_up",
+]);
+
 // ============================================================
 // TABLES BETTER AUTH - Gérées par Better Auth
 // ============================================================
@@ -340,6 +364,40 @@ export const wish = pgTable("wish", {
 });
 
 // ============================================================
+// TABLE NOTIFICATION - Notifications in-app
+// ============================================================
+
+/**
+ * Table notification - Notifications pour les utilisateurs
+ */
+export const notification = pgTable("notification", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  // L'utilisateur destinataire de la notification
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" })
+    .notNull(),
+
+  // Type de notification
+  type: notificationTypeEnum("type").notNull(),
+
+  // Titre de la notification
+  title: text("title").notNull(),
+
+  // Message détaillé
+  message: text("message").notNull(),
+
+  // Lien vers la page concernée (optionnel)
+  link: text("link"),
+
+  // Statut de lecture
+  read: boolean("read").default(false).notNull(),
+
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================================
 // RELATIONS - Définition des relations entre tables
 // ============================================================
 
@@ -408,4 +466,15 @@ export const wishRelations = relations(wish, ({ one }) => ({
  */
 export const depositPointRelations = relations(depositPoint, ({ many }) => ({
   wishes: many(wish),
+}));
+
+/**
+ * Relations de la table notification
+ * - user: L'utilisateur destinataire (many-to-one)
+ */
+export const notificationRelations = relations(notification, ({ one }) => ({
+  user: one(user, {
+    fields: [notification.userId],
+    references: [user.id],
+  }),
 }));

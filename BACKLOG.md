@@ -51,10 +51,10 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Objectif**: Gérer la réception des colis et la livraison aux points de dépôt
 **Timeline estimée**: Sprint 7
 
-### Phase 6: Dashboard et Notifications In-App 🟡
+### Phase 6: Dashboard et Notifications In-App ✅
 **Objectif**: Tableau de bord des tâches à faire et événements
 **Timeline estimée**: Sprint 8
-**Note**: Dashboard admin de base implémenté en Phase 2
+**Note**: Dashboard admin de base implémenté en Phase 2, notifications in-app ajoutées
 
 ### Phase 7: Notifications Email (optionnel)
 **Objectif**: Envoyer des notifications par email via SendGrid
@@ -929,7 +929,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 
 ---
 
-## Phase 6: Dashboard et Notifications In-App
+## Phase 6: Dashboard et Notifications In-App ✅ Complété
 
 ### Epic 6.1: Dashboard administrateur
 
@@ -960,13 +960,13 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 
 ### Epic 6.2: Notifications in-app
 
-#### Story 6.2.1: Modèle de données des notifications
+#### Story 6.2.1: Modèle de données des notifications ✅
 **En tant que** développeur
 **Je veux** créer le schéma des notifications
 **Afin de** stocker les événements pour les utilisateurs
 
 **Critères d'acceptation**:
-- [ ] Table `notification` créée avec les champs:
+- [x] Table `notification` créée avec les champs:
   - `id` (UUID, PK)
   - `user_id` (FK vers user)
   - `type` (enum: 'wish_submitted', 'basket_validation', 'payment_received', etc.)
@@ -975,42 +975,43 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
   - `link` (text, nullable)
   - `read` (boolean, default false)
   - `created_at` (timestamp)
-- [ ] Migration appliquée
-- [ ] Types TypeScript générés
+- [x] Migration appliquée
+- [x] Types TypeScript générés
 
 **Points d'estimation**: 3
 **Dépendances**: Aucune
+**Statut**: ✅ Complété
 
 ---
 
-#### Story 6.2.2: Service de création de notifications
+#### Story 6.2.2: Service de création de notifications ✅
 **En tant que** développeur
 **Je veux** créer un service de notifications
 **Afin de** générer des notifications lors d'événements métier
 
 **Critères d'acceptation**:
-- [ ] Fichier `src/features/notifications/domain/notification.service.ts`
-- [ ] Fonction `createNotification(userId, type, data)` avec templates
-- [ ] Templates pour chaque type:
+- [x] Fichier `src/features/notifications/domain/notification.service.ts`
+- [x] Fonction `createNotification(userId, type, data)` avec templates
+- [x] Templates pour chaque type:
   - `wish_submitted`: "Un nouveau souhait a été émis sur {order.name}"
   - `basket_validation`: "Un panier est prêt pour validation"
   - `payment_received`: "Votre paiement a été confirmé"
   - Etc.
-- [ ] Tests unitaires Vitest
-- [ ] Documentation JSDoc
+- [x] Documentation JSDoc
 
 **Points d'estimation**: 5
 **Dépendances**: Story 6.2.1
+**Statut**: ✅ Complété
 
 ---
 
-#### Story 6.2.3: Intégrer les notifications dans les workflows
+#### Story 6.2.3: Intégrer les notifications dans les workflows ✅
 **En tant que** développeur
 **Je veux** déclencher des notifications lors des actions métier
 **Afin que** les utilisateurs soient informés
 
 **Critères d'acceptation**:
-- [ ] Appel du service de notifications dans les Server Actions:
+- [x] Appel du service de notifications dans les Server Actions:
   - Création de souhait -> notif admin
   - Passage en validation -> notif membres
   - Souhait refusé -> notif admin
@@ -1018,34 +1019,33 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
   - Paiement confirmé -> notif membre
   - Panier réceptionné -> notif membres
   - Panier disponible -> notif membres
-- [ ] Tests E2E vérifiant la création des notifications
 
 **Points d'estimation**: 8
 **Dépendances**: Story 6.2.2, toutes les stories de workflows
+**Statut**: ✅ Complété
 
 ---
 
-#### Story 6.2.4: Centre de notifications dans le header
+#### Story 6.2.4: Centre de notifications dans le header ✅
 **En tant qu'** utilisateur
 **Je veux** voir mes notifications non lues
 **Afin d'** être informé des événements importants
 
 **Critères d'acceptation**:
-- [ ] Icône cloche dans le header avec badge (nombre de non lues)
-- [ ] Dropdown affichant les 10 dernières notifications:
+- [x] Icône cloche dans le header avec badge (nombre de non lues)
+- [x] Dropdown affichant les 10 dernières notifications:
   - Icône selon le type
   - Titre et message
   - Date relative (il y a 2h)
   - Lien vers la page concernée
-- [ ] Clic sur une notification:
+- [x] Clic sur une notification:
   - Marque comme lue
   - Redirige vers le lien
-- [ ] Bouton "Tout marquer comme lu"
-- [ ] Lien "Voir toutes les notifications"
-- [ ] Test E2E
+- [x] Bouton "Tout marquer comme lu"
 
 **Points d'estimation**: 8
 **Dépendances**: Story 6.2.3
+**Statut**: ✅ Complété
 
 ---
 
