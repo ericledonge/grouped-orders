@@ -11,6 +11,7 @@ import {
   SaveIcon,
   SendIcon,
   CalculatorIcon,
+  Trash2Icon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,8 @@ import {
   submitBasketForValidationAction,
   type UpdateBasketPricesState,
 } from "./update-basket-prices.action";
+import { removeWishFromBasketAction } from "./remove-wish-from-basket.action";
+import { deleteBasketAction } from "./delete-basket.action";
 import {
   calculateProrataShares,
   calculateAmountDue,
@@ -107,6 +110,8 @@ export function EditBasketForm({
   });
 
   const [shippingCost, setShippingCost] = useState(initialShippingCost || "");
+  const [removingWishId, setRemovingWishId] = useState<string | null>(null);
+  const [isDeletingBasket, setIsDeletingBasket] = useState(false);
 
   // Calculs en temps réel
   const calculations = useMemo(() => {
@@ -180,6 +185,42 @@ export function EditBasketForm({
     });
   };
 
+  const handleRemoveWish = async (wishId: string) => {
+    setRemovingWishId(wishId);
+    try {
+      const result = await removeWishFromBasketAction(wishId, basketId);
+      if (result.success) {
+        toast.success("Souhait retiré du panier");
+        // Retirer le souhait de l'état local
+        setPrices((prev) => {
+          const newPrices = { ...prev };
+          delete newPrices[wishId];
+          return newPrices;
+        });
+        router.refresh();
+      } else {
+        toast.error(result.error || "Une erreur est survenue");
+      }
+    } finally {
+      setRemovingWishId(null);
+    }
+  };
+
+  const handleDeleteBasket = async () => {
+    setIsDeletingBasket(true);
+    try {
+      const result = await deleteBasketAction(basketId);
+      if (result.success) {
+        toast.success("Panier supprimé");
+        router.push(`/admin/orders/${result.orderId}`);
+      } else {
+        toast.error(result.error || "Une erreur est survenue");
+      }
+    } finally {
+      setIsDeletingBasket(false);
+    }
+  };
+
   // Vérifier si tous les prix sont renseignés
   const allPricesFilled = wishes.every(
     (w) => prices[w.id] && Number.parseFloat(prices[w.id]) > 0,
@@ -250,6 +291,9 @@ export function EditBasketForm({
                     <th className="pb-3 font-medium w-28 text-right">
                       Total (€)
                     </th>
+                    <th className="pb-3 font-medium w-20 text-center">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -308,6 +352,49 @@ export function EditBasketForm({
                             ? roundToTwoDecimals(calc.total).toFixed(2)
                             : "-"}
                         </td>
+                        <td className="py-4 text-center">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={removingWishId === wish.id}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                {removingWishId === wish.id ? (
+                                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2Icon className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Retirer ce souhait du panier ?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Êtes-vous sûr de vouloir retirer{" "}
+                                  <strong>{wish.gameName}</strong> du panier ?
+                                  <br />
+                                  <br />
+                                  Le souhait repassera en attente d&apos;affectation
+                                  et les frais de port seront recalculés.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleRemoveWish(wish.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Retirer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </td>
                       </tr>
                     );
                   })}
@@ -332,6 +419,7 @@ export function EditBasketForm({
                         ? `${calculations.grandTotal.toFixed(2)} €`
                         : "-"}
                     </td>
+                    <td />
                   </tr>
                 </tfoot>
               </table>
@@ -341,9 +429,53 @@ export function EditBasketForm({
 
         {/* Actions */}
         <div className="flex justify-between gap-4">
-          <Button type="button" variant="ghost" asChild>
-            <a href={`/admin/orders/${orderId}`}>Retour à la commande</a>
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" asChild>
+              <a href={`/admin/orders/${orderId}`}>Retour à la commande</a>
+            </Button>
+
+            {/* Supprimer le panier */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={isDeletingBasket}
+                >
+                  {isDeletingBasket ? (
+                    <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2Icon className="mr-2 h-4 w-4" />
+                  )}
+                  Supprimer le panier
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Supprimer ce panier ?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Êtes-vous sûr de vouloir supprimer le panier{" "}
+                    <strong>{basketName}</strong> ?
+                    <br />
+                    <br />
+                    ⚠️ Cette action est irréversible. Tous les souhaits
+                    ({wishes.length}) seront remis en attente d&apos;affectation.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteBasket}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Supprimer définitivement
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
 
           <div className="flex gap-2">
             <SaveButton />

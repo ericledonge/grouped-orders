@@ -85,6 +85,34 @@ export const wishRepository = {
   },
 
   /**
+   * Met à jour un souhait
+   * @param id - L'ID du souhait
+   * @param data - Les données à mettre à jour
+   * @returns Le souhait mis à jour ou undefined si non trouvé
+   */
+  async update(
+    id: string,
+    data: Partial<{
+      status: "submitted" | "in_basket" | "validated" | "refused" | "paid" | "picked_up";
+      basketId: string | null;
+      unitPrice: string | null;
+      shippingShare: string | null;
+      customsShare: string | null;
+      amountDue: string | null;
+      amountPaid: string | null;
+      depositPointId: string | null;
+    }>,
+  ) {
+    const [updatedWish] = await db
+      .update(wish)
+      .set(data)
+      .where(eq(wish.id, id))
+      .returning();
+
+    return updatedWish;
+  },
+
+  /**
    * Compte le nombre de souhaits en attente (status = 'submitted')
    * @returns Le nombre de souhaits soumis
    */
