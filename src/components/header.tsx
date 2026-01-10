@@ -9,6 +9,7 @@ import {
   PackageIcon,
   SettingsIcon,
   ShieldIcon,
+  ShoppingCartIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -46,6 +47,7 @@ const adminNav: NavItem[] = [
 const memberNav: NavItem[] = [
   { label: "Commandes", href: "/orders", icon: PackageIcon },
   { label: "Mes souhaits", href: "/my-wishes", icon: HeartIcon },
+  { label: "Mes paniers", href: "/my-baskets", icon: ShoppingCartIcon },
 ];
 
 interface HeaderProps {

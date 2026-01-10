@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { basket, wish } from "@/lib/db/schema";
 import type { NewBasket, BasketStatus } from "./basket.types";
@@ -176,5 +176,72 @@ export const basketRepository = {
       .returning();
 
     return updatedBasket;
+  },
+
+  /**
+   * Récupère les paniers en attente de validation contenant des souhaits d'un utilisateur
+   * @param userId - L'ID de l'utilisateur
+   * @returns Liste des paniers avec les souhaits de l'utilisateur
+   */
+  async findAwaitingValidationForUser(userId: string) {
+    // Trouver les souhaits de l'utilisateur qui sont dans un panier en attente de validation
+    const userWishes = await db
+      .select()
+      .from(wish)
+      .where(
+        and(
+          eq(wish.userId, userId),
+          eq(wish.status, "in_basket"),
+        ),
+      );
+
+    if (userWishes.length === 0) {
+      return [];
+    }
+
+    // Récupérer les IDs des paniers uniques
+    const basketIds = [...new Set(userWishes.map((w) => w.basketId).filter(Boolean))] as string[];
+
+    if (basketIds.length === 0) {
+      return [];
+    }
+
+    // Récupérer les paniers en status awaiting_validation
+    const baskets = await db.query.basket.findMany({
+      where: and(
+        inArray(basket.id, basketIds),
+        eq(basket.status, "awaiting_validation"),
+      ),
+      with: {
+        order: true,
+        wishes: {
+          where: eq(wish.userId, userId),
+          with: {
+            user: true,
+          },
+        },
+      },
+      orderBy: [desc(basket.createdAt)],
+    });
+
+    return baskets;
+  },
+
+  /**
+   * Récupère un panier avec les souhaits d'un utilisateur spécifique
+   * @param basketId - L'ID du panier
+   * @param userId - L'ID de l'utilisateur
+   * @returns Le panier avec les souhaits de l'utilisateur
+   */
+  async findByIdWithUserWishes(basketId: string, userId: string) {
+    return db.query.basket.findFirst({
+      where: eq(basket.id, basketId),
+      with: {
+        order: true,
+        wishes: {
+          where: eq(wish.userId, userId),
+        },
+      },
+    });
   },
 };
