@@ -36,8 +36,8 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Objectif**: Permettre la création de commandes et l'émission de souhaits
 **Timeline estimée**: Sprint 1-2
 
-### Phase 3: Gestion des Paniers 🟡
-**Statut**: En cours
+### Phase 3: Gestion des Paniers ✅
+**Statut**: Complété
 **Objectif**: Créer et gérer des paniers de commande avec calculs de frais
 **Timeline estimée**: Sprint 3-4
 
@@ -563,19 +563,20 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** le remettre en attente d'affectation
 
 **Critères d'acceptation**:
-- [ ] Bouton "Retirer" sur chaque souhait dans `/admin/baskets/{basketId}/edit`
-- [ ] Dialog de confirmation
-- [ ] Server Action pour retirer le souhait
-- [ ] Souhait repasse en status "submitted"
-- [ ] Recalcul automatique des frais de port au prorata
-- [ ] Toast de confirmation
-- [ ] Test E2E
+- [x] Bouton "Retirer" sur chaque souhait dans `/admin/baskets/{basketId}/edit`
+- [x] Dialog de confirmation
+- [x] Server Action pour retirer le souhait
+- [x] Souhait repasse en status "submitted"
+- [x] Recalcul automatique des frais de port au prorata (côté client)
+- [x] Toast de confirmation
+- [ ] Test E2E (reporté)
 
 **Règles de gestion**:
 - Impossible de retirer un souhait si status du panier != "draft"
 
 **Points d'estimation**: 5
 **Dépendances**: Story 3.2.2
+**Statut**: ✅ Complété
 
 ---
 
@@ -585,18 +586,19 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** corriger une erreur
 
 **Critères d'acceptation**:
-- [ ] Bouton "Supprimer le panier" visible si status = "draft"
-- [ ] Dialog de confirmation avec avertissement
-- [ ] Server Action pour supprimer
-- [ ] Tous les souhaits repassent en status "submitted"
-- [ ] Redirection vers `/admin/orders/{orderId}`
-- [ ] Test E2E
+- [x] Bouton "Supprimer le panier" visible si status = "draft"
+- [x] Dialog de confirmation avec avertissement
+- [x] Server Action pour supprimer
+- [x] Tous les souhaits repassent en status "submitted"
+- [x] Redirection vers `/admin/orders/{orderId}`
+- [ ] Test E2E (reporté)
 
 **Règles de gestion**:
 - Impossible de supprimer un panier si status != "draft"
 
 **Points d'estimation**: 3
 **Dépendances**: Story 3.2.2
+**Statut**: ✅ Complété
 
 ---
 
@@ -1187,7 +1189,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 | Phase | Stories | Points | Sprints estimés | Statut |
 |-------|---------|--------|-----------------|--------|
 | Phase 2 | 14 | 56 | 2 sprints | ✅ Complété |
-| Phase 3 | 11 | 52 | 2 sprints | 🟡 En cours (7/11 complétés) |
+| Phase 3 | 11 | 52 | 2 sprints | ✅ Complété (11/11) |
 | Phase 4 | 7 | 38 | 1.5 sprints | À faire |
 | Phase 5 | 8 | 29 | 1 sprint | À faire |
 | Phase 6 | 6 | 37 | 1.5 sprints | À faire |
@@ -1214,7 +1216,7 @@ Pour un MVP fonctionnel rapidement, prioriser dans l'ordre :
 - Story 3.3.1
 
 ### Sprint 3 (Focus: Paniers restants + Validation) 🟡 En cours
-- Story 3.2.5, 3.2.6
+- Story 3.2.5, 3.2.6 ✅
 - Story 4.1.1, 4.1.2
 
 ### Sprint 4 (Focus: Paiements + Douanes)
