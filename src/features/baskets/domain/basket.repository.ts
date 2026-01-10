@@ -246,6 +246,59 @@ export const basketRepository = {
   },
 
   /**
+   * Récupère les paniers disponibles au retrait contenant des souhaits d'un utilisateur
+   * @param userId - L'ID de l'utilisateur
+   * @returns Liste des paniers avec les souhaits de l'utilisateur
+   */
+  async findAvailableForPickupByUser(userId: string) {
+    // Trouver les souhaits validés/payés de l'utilisateur
+    const userWishes = await db
+      .select()
+      .from(wish)
+      .where(
+        and(
+          eq(wish.userId, userId),
+          // Souhaits validés ou payés (pas encore récupérés)
+          inArray(wish.status, ["validated", "paid"]),
+        ),
+      );
+
+    if (userWishes.length === 0) {
+      return [];
+    }
+
+    // Récupérer les IDs des paniers uniques
+    const basketIds = [...new Set(userWishes.map((w) => w.basketId).filter(Boolean))] as string[];
+
+    if (basketIds.length === 0) {
+      return [];
+    }
+
+    // Récupérer les paniers en status available_pickup
+    const baskets = await db.query.basket.findMany({
+      where: and(
+        inArray(basket.id, basketIds),
+        eq(basket.status, "available_pickup"),
+      ),
+      with: {
+        order: true,
+        wishes: {
+          where: and(
+            eq(wish.userId, userId),
+            inArray(wish.status, ["validated", "paid"]),
+          ),
+          with: {
+            depositPoint: true,
+          },
+        },
+      },
+      orderBy: [desc(basket.availableAt)],
+    });
+
+    return baskets;
+  },
+
+  /**
    * Récupère un panier avec tous les souhaits groupés par membre (pour admin)
    * @param basketId - L'ID du panier
    * @returns Le panier avec les souhaits et leurs utilisateurs

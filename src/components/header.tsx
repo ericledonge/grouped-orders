@@ -7,6 +7,7 @@ import {
   LogOutIcon,
   MapPinIcon,
   MenuIcon,
+  PackageCheckIcon,
   PackageIcon,
   SettingsIcon,
   ShieldIcon,
@@ -50,6 +51,7 @@ const memberNav: NavItem[] = [
   { label: "Commandes", href: "/orders", icon: PackageIcon },
   { label: "Mes souhaits", href: "/my-wishes", icon: HeartIcon },
   { label: "Mes paniers", href: "/my-baskets", icon: ShoppingCartIcon },
+  { label: "Mes retraits", href: "/my-pickups", icon: PackageCheckIcon },
 ];
 
 interface HeaderProps {
