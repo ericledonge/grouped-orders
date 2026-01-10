@@ -44,3 +44,16 @@ export interface ProrataResult {
   id: string;
   share: number;
 }
+
+/**
+ * Transitions de statut valides pour les paniers
+ */
+export const BASKET_STATUS_TRANSITIONS: Record<BasketStatus, BasketStatus[]> = {
+  draft: ["awaiting_validation"],
+  awaiting_validation: ["validated", "awaiting_reception"],
+  validated: ["awaiting_reception"],
+  awaiting_customs: ["awaiting_reception"],
+  awaiting_reception: ["awaiting_delivery"],
+  awaiting_delivery: ["available_pickup"],
+  available_pickup: [],
+};
