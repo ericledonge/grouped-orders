@@ -5,6 +5,7 @@ import {
   PencilIcon,
   ExternalLinkIcon,
   PackageIcon,
+  CreditCardIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -97,14 +98,24 @@ export default async function BasketDetailPage({
           </p>
         </div>
 
-        {basket.status === "draft" && (
-          <Button asChild>
-            <Link href={`/admin/baskets/${id}/edit`}>
-              <PencilIcon className="mr-2 h-4 w-4" />
-              Éditer les prix
-            </Link>
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {basket.status === "draft" && (
+            <Button asChild>
+              <Link href={`/admin/baskets/${id}/edit`}>
+                <PencilIcon className="mr-2 h-4 w-4" />
+                Éditer les prix
+              </Link>
+            </Button>
+          )}
+          {basket.status === "awaiting_validation" && (
+            <Button asChild variant="outline">
+              <Link href={`/admin/baskets/${id}/payments`}>
+                <CreditCardIcon className="mr-2 h-4 w-4" />
+                Gérer les paiements
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Statistiques */}

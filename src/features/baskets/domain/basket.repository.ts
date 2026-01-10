@@ -244,4 +244,76 @@ export const basketRepository = {
       },
     });
   },
+
+  /**
+   * Récupère un panier avec tous les souhaits groupés par membre (pour admin)
+   * @param basketId - L'ID du panier
+   * @returns Le panier avec les souhaits et leurs utilisateurs
+   */
+  async findByIdWithWishesGroupedByMember(basketId: string) {
+    const basketData = await db.query.basket.findFirst({
+      where: eq(basket.id, basketId),
+      with: {
+        order: true,
+        wishes: {
+          with: {
+            user: true,
+          },
+          orderBy: (wish, { asc }) => [asc(wish.userId), asc(wish.createdAt)],
+        },
+      },
+    });
+
+    if (!basketData) return null;
+
+    // Grouper les souhaits par membre
+    const memberMap = new Map<
+      string,
+      {
+        user: { id: string; name: string; email: string };
+        wishes: typeof basketData.wishes;
+        totalDue: number;
+        totalPaid: number;
+        paymentStatus: "pending" | "sent" | "received" | "partial" | "mixed";
+      }
+    >();
+
+    for (const w of basketData.wishes) {
+      if (!memberMap.has(w.userId)) {
+        memberMap.set(w.userId, {
+          user: {
+            id: w.user.id,
+            name: w.user.name,
+            email: w.user.email,
+          },
+          wishes: [],
+          totalDue: 0,
+          totalPaid: 0,
+          paymentStatus: "pending",
+        });
+      }
+
+      const member = memberMap.get(w.userId)!;
+      member.wishes.push(w);
+      member.totalDue += w.amountDue ? Number.parseFloat(w.amountDue) : 0;
+      member.totalPaid += w.amountPaid ? Number.parseFloat(w.amountPaid) : 0;
+    }
+
+    // Déterminer le statut de paiement global de chaque membre
+    for (const member of memberMap.values()) {
+      const statuses = member.wishes.map((w) => w.paymentStatus || "pending");
+      const uniqueStatuses = [...new Set(statuses)];
+
+      if (uniqueStatuses.length === 1) {
+        member.paymentStatus = uniqueStatuses[0] as "pending" | "sent" | "received" | "partial";
+      } else {
+        member.paymentStatus = "mixed";
+      }
+    }
+
+    return {
+      ...basketData,
+      memberPayments: Array.from(memberMap.values()),
+    };
+  },
 };
