@@ -16,6 +16,7 @@ import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
 import { WishStatusBadge } from "@/features/wishes/components/wish-badges";
 import { roundToTwoDecimals } from "@/features/baskets/domain/basket.service";
+import { AddCustomsDialog } from "@/features/baskets/components/add-customs-dialog";
 
 export const metadata: Metadata = {
   title: "Détails du panier - Admin - Grouped Order",
@@ -108,12 +109,28 @@ export default async function BasketDetailPage({
             </Button>
           )}
           {basket.status === "awaiting_validation" && (
-            <Button asChild variant="outline">
-              <Link href={`/admin/baskets/${id}/payments`}>
-                <CreditCardIcon className="mr-2 h-4 w-4" />
-                Gérer les paiements
-              </Link>
-            </Button>
+            <>
+              <Button asChild variant="outline">
+                <Link href={`/admin/baskets/${id}/payments`}>
+                  <CreditCardIcon className="mr-2 h-4 w-4" />
+                  Gérer les paiements
+                </Link>
+              </Button>
+              <AddCustomsDialog
+                basketId={basket.id}
+                basketName={basket.name}
+                validatedWishesCount={basket.wishes.filter((w) => w.status === "validated" || w.status === "paid").length}
+                totalGames={totalGames}
+              />
+            </>
+          )}
+          {basket.status === "validated" && (
+            <AddCustomsDialog
+              basketId={basket.id}
+              basketName={basket.name}
+              validatedWishesCount={basket.wishes.filter((w) => w.status === "validated" || w.status === "paid").length}
+              totalGames={totalGames}
+            />
           )}
         </div>
       </div>
