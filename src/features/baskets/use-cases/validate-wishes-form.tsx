@@ -119,13 +119,17 @@ export function ValidateWishesForm({
           toast.success(
             `${validatedCount} souhait${validatedCount > 1 ? "s" : ""} validé${validatedCount > 1 ? "s" : ""}`,
           );
+          // Rediriger vers la page de paiement
+          router.push(`/baskets/${basketId}/payment`);
+        } else {
+          // Tout a été refusé, retour aux paniers
+          router.push("/my-baskets");
         }
-        if (refusedCount > 0) {
+        if (refusedCount > 0 && validatedCount > 0) {
           toast.info(
             `${refusedCount} souhait${refusedCount > 1 ? "s" : ""} refusé${refusedCount > 1 ? "s" : ""}`,
           );
         }
-        router.push("/my-baskets");
         router.refresh();
       } else {
         toast.error(result.error || "Une erreur est survenue");
