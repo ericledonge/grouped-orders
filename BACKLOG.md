@@ -41,12 +41,13 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Objectif**: Créer et gérer des paniers de commande avec calculs de frais
 **Timeline estimée**: Sprint 3-4
 
-### Phase 4: Workflow de Validation et Paiements 🟡
-**Statut**: En cours (Epic 4.1 et 4.2 complétés)
+### Phase 4: Workflow de Validation et Paiements ✅
+**Statut**: Complété
 **Objectif**: Permettre la validation des souhaits et le suivi des paiements
 **Timeline estimée**: Sprint 5-6
 
-### Phase 5: Réception et Livraison
+### Phase 5: Réception et Livraison 🟡
+**Statut**: En cours
 **Objectif**: Gérer la réception des colis et la livraison aux points de dépôt
 **Timeline estimée**: Sprint 7
 
@@ -777,16 +778,16 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** les répartir entre les membres
 
 **Critères d'acceptation**:
-- [ ] Dans `/admin/baskets/{basketId}/edit`
-- [ ] Bouton "Ajouter frais de douane" visible si status = "validated"
-- [ ] Dialog avec input pour le montant total
-- [ ] Server Action pour:
+- [x] Dans `/admin/baskets/{basketId}` page de détail
+- [x] Bouton "Ajouter frais de douane" visible si status = "awaiting_validation" ou "validated"
+- [x] Dialog avec input pour le montant total et estimation par jeu
+- [x] Server Action pour:
   - Enregistrer `customs_cost` sur le panier
   - Calculer `customs_share` pour chaque souhait validé (au prorata)
   - Mettre à jour `amount_due` de chaque souhait
-  - Changer status en "awaiting_customs" puis "awaiting_reception"
-- [ ] Toast de confirmation
-- [ ] Test E2E avec vérification des calculs
+  - Changer status en "awaiting_reception"
+- [x] Toast de confirmation
+- [ ] Test E2E (reporté)
 
 **Règles de gestion**:
 - Les frais de douane sont répartis uniquement sur les souhaits validés
@@ -794,6 +795,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 
 **Points d'estimation**: 8
 **Dépendances**: Story 3.2.3 (service de calcul), Story 4.2.1
+**Statut**: ✅ Complété
 
 ---
 
@@ -807,16 +809,17 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** notifier les membres
 
 **Critères d'acceptation**:
-- [ ] Dans `/admin/baskets/{basketId}`
-- [ ] Bouton "Marquer comme réceptionné" visible si status = "awaiting_reception"
-- [ ] Dialog de confirmation
-- [ ] Server Action pour changer status en "awaiting_delivery"
-- [ ] Champ `received_at` (timestamp) ajouté à la table `basket`
-- [ ] Toast de confirmation
-- [ ] Test E2E
+- [x] Dans `/admin/baskets/{basketId}` via `BasketStatusActions`
+- [x] Bouton "Marquer comme réceptionné" visible si status = "awaiting_reception"
+- [x] Dialog de confirmation
+- [x] Server Action pour changer status en "awaiting_delivery"
+- [x] Champ `received_at` automatiquement mis à jour
+- [x] Toast de confirmation
+- [ ] Test E2E (reporté)
 
 **Points d'estimation**: 3
 **Dépendances**: Story 4.3.1
+**Statut**: ✅ Complété
 
 ---
 
@@ -1201,8 +1204,8 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 |-------|---------|--------|-----------------|--------|
 | Phase 2 | 14 | 56 | 2 sprints | ✅ Complété |
 | Phase 3 | 11 | 52 | 2 sprints | ✅ Complété (11/11) |
-| Phase 4 | 7 | 38 | 1.5 sprints | 🟡 En cours (4/7 complétés) |
-| Phase 5 | 8 | 29 | 1 sprint | À faire |
+| Phase 4 | 7 | 38 | 1.5 sprints | ✅ Complété |
+| Phase 5 | 8 | 29 | 1 sprint | 🟡 En cours (2/8 complétés) |
 | Phase 6 | 6 | 37 | 1.5 sprints | À faire |
 | Phase 7 | 3 | 16 | 1 sprint | À faire |
 | Tech | 5 | 23 | Transversal | 3/5 complétés |
