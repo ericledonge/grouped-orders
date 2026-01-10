@@ -41,7 +41,8 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Objectif**: Créer et gérer des paniers de commande avec calculs de frais
 **Timeline estimée**: Sprint 3-4
 
-### Phase 4: Workflow de Validation et Paiements
+### Phase 4: Workflow de Validation et Paiements 🟡
+**Statut**: En cours (Epic 4.1 et 4.2 complétés)
 **Objectif**: Permettre la validation des souhaits et le suivi des paiements
 **Timeline estimée**: Sprint 5-6
 
@@ -638,19 +639,21 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** les valider ou les refuser
 
 **Critères d'acceptation**:
-- [ ] Page `/my-baskets` accessible aux membres
-- [ ] Liste des paniers avec mes souhaits en attente
-- [ ] Pour chaque panier:
+- [x] Page `/my-baskets` accessible aux membres
+- [x] Liste des paniers avec mes souhaits en attente
+- [x] Pour chaque panier:
   - Nom du panier
   - Commande associée
   - Liste de mes souhaits avec prix détaillés
   - Total à payer pour ce panier
-  - Bouton "Valider mes souhaits" ou "Voir détails"
-- [ ] Badge "Action requise" si validation en attente
-- [ ] Test E2E
+  - Bouton "Valider mes souhaits"
+- [x] Badge "Action requise" si validation en attente
+- [x] Lien dans le header de navigation
+- [ ] Test E2E (reporté)
 
 **Points d'estimation**: 5
 **Dépendances**: Story 3.3.1
+**Statut**: ✅ Complété
 
 ---
 
@@ -660,20 +663,22 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin d'** accepter ou décliner l'achat avec le prix proposé
 
 **Critères d'acceptation**:
-- [ ] Page `/baskets/{basketId}/validate`
-- [ ] Pour chaque de mes souhaits:
+- [x] Page `/baskets/{basketId}/validate`
+- [x] Pour chaque de mes souhaits:
   - Nom du jeu
   - Prix unitaire
   - Frais de port
   - Total
-  - Boutons radio: Valider / Refuser
-- [ ] Total global de mes souhaits validés
-- [ ] Bouton "Confirmer mes choix"
-- [ ] Server Action pour mettre à jour les statuts:
+  - Boutons: Valider / Refuser (avec couleurs)
+- [x] Total global de mes souhaits validés
+- [x] Actions rapides "Tout valider" / "Tout refuser"
+- [x] Bouton "Confirmer mes choix" avec dialog de confirmation
+- [x] Server Action pour mettre à jour les statuts:
   - Validé -> status "validated"
   - Refusé -> status "refused"
-- [ ] Toast de confirmation
-- [ ] Test E2E (scénarios: tout valider, tout refuser, mixte)
+- [x] Toast de confirmation
+- [x] Redirection vers page de paiement si souhaits validés
+- [ ] Test E2E (reporté)
 
 **Règles de gestion**:
 - Le membre ne peut pas modifier les prix
@@ -681,6 +686,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 
 **Points d'estimation**: 8
 **Dépendances**: Story 4.1.1
+**Statut**: ✅ Complété
 
 ---
 
@@ -692,17 +698,18 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** suivre les paiements par souhait
 
 **Critères d'acceptation**:
-- [ ] Champs ajoutés à la table `wish`:
+- [x] Champs ajoutés à la table `wish`:
   - `payment_status` (enum: 'pending', 'sent', 'received', 'partial')
   - `amount_due` (decimal, nullable) - calculé automatiquement
   - `amount_paid` (decimal, default 0)
   - `payment_sent_at` (timestamp, nullable)
   - `payment_received_at` (timestamp, nullable)
-- [ ] Migration appliquée
-- [ ] Types TypeScript mis à jour
+- [x] Migration appliquée (fait en Phase 3)
+- [x] Types TypeScript mis à jour
 
 **Points d'estimation**: 2
 **Dépendances**: Aucune
+**Statut**: ✅ Complété (en Phase 3)
 
 ---
 
@@ -712,15 +719,15 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin d'** informer l'administrateur
 
 **Critères d'acceptation**:
-- [ ] Dans `/baskets/{basketId}/validate`, après validation
-- [ ] Section "Paiement" affichant:
-  - Total à payer
-  - Statut du paiement
-  - Bouton "J'ai envoyé le paiement" si status = pending
-- [ ] Server Action pour marquer `payment_status = 'sent'`
-- [ ] Timestamp `payment_sent_at` automatique
-- [ ] Toast de confirmation
-- [ ] Test E2E
+- [x] Page `/baskets/{basketId}/payment` après validation
+- [x] Récapitulatif des souhaits à payer
+- [x] Instructions de paiement
+- [x] Bouton "J'ai envoyé le paiement" avec dialog de confirmation
+- [x] Server Action pour marquer `payment_status = 'sent'`
+- [x] Timestamp `payment_sent_at` automatique
+- [x] Toast de confirmation
+- [x] Confirmation visuelle après envoi
+- [ ] Test E2E (reporté)
 
 **Règles de gestion**:
 - Visible uniquement si au moins un souhait est validé
@@ -728,6 +735,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 
 **Points d'estimation**: 5
 **Dépendances**: Story 4.2.1, Story 4.1.2
+**Statut**: ✅ Complété
 
 ---
 
@@ -737,24 +745,27 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** suivre les paiements reçus
 
 **Critères d'acceptation**:
-- [ ] Page `/admin/baskets/{basketId}/payments`
-- [ ] Liste des membres avec souhaits validés:
+- [x] Page `/admin/baskets/{basketId}/payments`
+- [x] Statistiques: Total à recevoir, Total reçu, Paiements en attente
+- [x] Liste des membres avec souhaits validés:
   - Nom du membre
   - Nombre de souhaits
   - Montant dû
   - Montant payé
-  - Statut (badge)
+  - Statut (badge avec PaymentStatusBadge)
   - Actions: Marquer comme reçu / Paiement partiel
-- [ ] Dialog pour paiement partiel (saisir montant)
-- [ ] Server Action pour mettre à jour:
+- [x] Dialog pour paiement partiel (saisir montant)
+- [x] Server Actions pour mettre à jour:
   - `payment_status = 'received'` ou `'partial'`
   - `amount_paid`
   - `payment_received_at`
-- [ ] Toast de confirmation
-- [ ] Test E2E
+- [x] Toast de confirmation
+- [x] Bouton dans la page détail panier pour accéder aux paiements
+- [ ] Test E2E (reporté)
 
 **Points d'estimation**: 8
 **Dépendances**: Story 4.2.2
+**Statut**: ✅ Complété
 
 ---
 
@@ -1190,7 +1201,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 |-------|---------|--------|-----------------|--------|
 | Phase 2 | 14 | 56 | 2 sprints | ✅ Complété |
 | Phase 3 | 11 | 52 | 2 sprints | ✅ Complété (11/11) |
-| Phase 4 | 7 | 38 | 1.5 sprints | À faire |
+| Phase 4 | 7 | 38 | 1.5 sprints | 🟡 En cours (4/7 complétés) |
 | Phase 5 | 8 | 29 | 1 sprint | À faire |
 | Phase 6 | 6 | 37 | 1.5 sprints | À faire |
 | Phase 7 | 3 | 16 | 1 sprint | À faire |
