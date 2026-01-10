@@ -5,6 +5,7 @@ import {
   HeartIcon,
   LayoutDashboardIcon,
   LogOutIcon,
+  MapPinIcon,
   MenuIcon,
   PackageIcon,
   SettingsIcon,
@@ -42,6 +43,7 @@ interface NavItem {
 const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
   { label: "Commandes", href: "/admin/orders", icon: PackageIcon },
+  { label: "Points de dépôt", href: "/admin/deposit-points", icon: MapPinIcon },
 ];
 
 const memberNav: NavItem[] = [
