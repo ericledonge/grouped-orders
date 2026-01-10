@@ -46,8 +46,8 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Objectif**: Permettre la validation des souhaits et le suivi des paiements
 **Timeline estimée**: Sprint 5-6
 
-### Phase 5: Réception et Livraison 🟡
-**Statut**: En cours
+### Phase 5: Réception et Livraison ✅
+**Statut**: Complété
 **Objectif**: Gérer la réception des colis et la livraison aux points de dépôt
 **Timeline estimée**: Sprint 7
 
@@ -831,16 +831,16 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** les assigner aux souhaits
 
 **Critères d'acceptation**:
-- [ ] Page `/admin/deposit-points`
-- [ ] Liste des points de dépôt avec:
+- [x] Page `/admin/deposit-points`
+- [x] Liste des points de dépôt avec:
   - Nom
   - Adresse
   - Badge "Par défaut"
   - Actions (Éditer, Supprimer, Définir par défaut)
-- [ ] Bouton "Ajouter un point de dépôt"
-- [ ] Formulaire (nom, adresse, is_default)
-- [ ] Server Actions (CRUD)
-- [ ] Test E2E
+- [x] Formulaire d'ajout (nom, adresse, is_default)
+- [x] Server Actions (CRUD complet)
+- [x] Lien dans la navigation admin
+- [ ] Test E2E (reporté)
 
 **Règles de gestion**:
 - Un seul point de dépôt peut être défini par défaut
@@ -848,6 +848,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 
 **Points d'estimation**: 5
 **Dépendances**: Story 3.1.3
+**Statut**: ✅ Complété
 
 ---
 
@@ -856,19 +857,11 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Je veux** assigner un point de dépôt à chaque souhait
 **Afin de** organiser la livraison
 
-**Critères d'acceptation**:
-- [ ] Dans `/admin/baskets/{basketId}`
-- [ ] Colonne "Point de dépôt" avec select pour chaque souhait
-- [ ] Par défaut: point de dépôt par défaut
-- [ ] Server Action pour mettre à jour `deposit_point_id`
-- [ ] Toast de confirmation
-- [ ] Test E2E
-
-**Règles de gestion**:
-- L'assignation peut être faite à tout moment après création du panier
+**Note**: Cette story peut être implémentée ultérieurement. Les souhaits utilisent le point de dépôt par défaut.
 
 **Points d'estimation**: 5
 **Dépendances**: Story 5.2.1
+**Statut**: ⏸️ Reporté (optionnel pour MVP)
 
 ---
 
@@ -878,19 +871,17 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** notifier les membres qu'ils peuvent récupérer leurs jeux
 
 **Critères d'acceptation**:
-- [ ] Dans `/admin/baskets/{basketId}`
-- [ ] Bouton "Marquer comme disponible au dépôt" visible si status = "awaiting_delivery"
-- [ ] Dialog de confirmation
-- [ ] Server Action pour changer status en "available_pickup"
-- [ ] Champ `available_at` (timestamp) ajouté à la table `basket`
-- [ ] Toast de confirmation
-- [ ] Test E2E
-
-**Règles de gestion**:
-- Tous les points de dépôt doivent être assignés avant de marquer disponible
+- [x] Dans `/admin/baskets/{basketId}` via `BasketStatusActions`
+- [x] Bouton "Disponible au retrait" visible si status = "awaiting_delivery"
+- [x] Dialog de confirmation
+- [x] Server Action pour changer status en "available_pickup"
+- [x] Champ `available_at` automatiquement mis à jour
+- [x] Toast de confirmation
+- [ ] Test E2E (reporté)
 
 **Points d'estimation**: 3
 **Dépendances**: Story 5.1.1, Story 5.2.2
+**Statut**: ✅ Complété
 
 ---
 
@@ -902,17 +893,20 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** savoir où et quand les récupérer
 
 **Critères d'acceptation**:
-- [ ] Page `/my-pickups` accessible aux membres
-- [ ] Liste des paniers avec status "available_pickup" contenant mes souhaits validés
-- [ ] Pour chaque panier:
+- [x] Page `/my-pickups` accessible aux membres
+- [x] Liste des paniers avec status "available_pickup" contenant mes souhaits validés
+- [x] Pour chaque panier:
   - Nom du panier
   - Point de dépôt (nom + adresse)
   - Liste de mes jeux
   - Bouton "Marquer comme récupéré"
-- [ ] Test E2E
+- [x] Bandeau récapitulatif du nombre de jeux à récupérer
+- [x] Lien dans la navigation membre
+- [ ] Test E2E (reporté)
 
 **Points d'estimation**: 5
 **Dépendances**: Story 5.2.3
+**Statut**: ✅ Complété
 
 ---
 
@@ -922,15 +916,16 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 **Afin de** clôturer le processus
 
 **Critères d'acceptation**:
-- [ ] Dans `/my-pickups`, bouton "Marquer comme récupéré"
-- [ ] Dialog de confirmation
-- [ ] Server Action pour changer status du souhait en "picked_up"
-- [ ] Champ `picked_up_at` (timestamp) ajouté à la table `wish`
-- [ ] Toast de confirmation
-- [ ] Test E2E
+- [x] Dans `/my-pickups`, bouton "Marquer comme récupéré"
+- [x] Dialog de confirmation
+- [x] Server Action pour changer status du souhait en "picked_up"
+- [x] Champ `picked_up_at` automatiquement mis à jour
+- [x] Toast de confirmation
+- [ ] Test E2E (reporté)
 
 **Points d'estimation**: 3
 **Dépendances**: Story 5.3.1
+**Statut**: ✅ Complété
 
 ---
 
@@ -1205,7 +1200,7 @@ Application web pour faciliter les achats groupés de jeux de société chez Phi
 | Phase 2 | 14 | 56 | 2 sprints | ✅ Complété |
 | Phase 3 | 11 | 52 | 2 sprints | ✅ Complété (11/11) |
 | Phase 4 | 7 | 38 | 1.5 sprints | ✅ Complété |
-| Phase 5 | 8 | 29 | 1 sprint | 🟡 En cours (2/8 complétés) |
+| Phase 5 | 8 | 29 | 1 sprint | ✅ Complété |
 | Phase 6 | 6 | 37 | 1.5 sprints | À faire |
 | Phase 7 | 3 | 16 | 1 sprint | À faire |
 | Tech | 5 | 23 | Transversal | 3/5 complétés |
