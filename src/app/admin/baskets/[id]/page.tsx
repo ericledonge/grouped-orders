@@ -17,6 +17,7 @@ import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
 import { WishStatusBadge } from "@/features/wishes/components/wish-badges";
 import { roundToTwoDecimals } from "@/features/baskets/domain/basket.service";
 import { AddCustomsDialog } from "@/features/baskets/components/add-customs-dialog";
+import { BasketStatusActions } from "@/features/baskets/components/basket-status-actions";
 
 export const metadata: Metadata = {
   title: "Détails du panier - Admin - Grouped Order",
@@ -132,6 +133,11 @@ export default async function BasketDetailPage({
               totalGames={totalGames}
             />
           )}
+          <BasketStatusActions
+            basketId={basket.id}
+            basketName={basket.name}
+            status={basket.status}
+          />
         </div>
       </div>
 
