@@ -85,6 +85,49 @@ export const wishRepository = {
   },
 
   /**
+   * Met à jour un souhait
+   * @param id - L'ID du souhait
+   * @param data - Les données à mettre à jour
+   * @returns Le souhait mis à jour ou undefined si non trouvé
+   */
+  async update(
+    id: string,
+    data: Partial<{
+      status: "submitted" | "in_basket" | "validated" | "refused" | "paid" | "picked_up";
+      basketId: string | null;
+      unitPrice: string | null;
+      shippingShare: string | null;
+      customsShare: string | null;
+      amountDue: string | null;
+      amountPaid: string | null;
+      depositPointId: string | null;
+      paymentStatus: "pending" | "sent" | "received" | "partial";
+    }>,
+  ) {
+    const [updatedWish] = await db
+      .update(wish)
+      .set(data)
+      .where(eq(wish.id, id))
+      .returning();
+
+    return updatedWish;
+  },
+
+  /**
+   * Récupère les souhaits d'un panier avec les informations utilisateur
+   * @param basketId - L'ID du panier
+   * @returns Liste des souhaits avec les détails de l'utilisateur
+   */
+  async findByBasketIdWithUser(basketId: string) {
+    return db.query.wish.findMany({
+      where: eq(wish.basketId, basketId),
+      with: {
+        user: true,
+      },
+    });
+  },
+
+  /**
    * Compte le nombre de souhaits en attente (status = 'submitted')
    * @returns Le nombre de souhaits soumis
    */

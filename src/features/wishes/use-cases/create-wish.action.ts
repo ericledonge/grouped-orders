@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { orderRepository } from "@/features/orders/domain/order.repository";
+import { adminRepository } from "@/features/notifications/domain/admin.repository";
+import { notificationService } from "@/features/notifications/domain/notification.service";
 import { requireSession } from "@/lib/auth/session";
 import { getErrorMessage } from "@/lib/errors";
 import { wishRepository } from "../domain/wish.repository";
@@ -52,7 +54,21 @@ export async function createWish(input: CreateWishInput) {
       philibertUrl: validatedData.philibertUrl || null,
     });
 
-    // 5. Revalider les caches
+    // 5. Notifier les admins du nouveau souhait
+    try {
+      const adminIds = await adminRepository.findAllAdminIds();
+      await notificationService.notifyAdmins(adminIds, "wish_submitted", {
+        userName: session.user.name || session.user.email || "Un membre",
+        gameName: validatedData.gameName,
+        orderDescription: order.description || order.id,
+        orderId: validatedData.orderId,
+      });
+    } catch (notifError) {
+      // Ne pas bloquer l'action si les notifications échouent
+      console.error("Erreur lors de l'envoi des notifications:", notifError);
+    }
+
+    // 6. Revalider les caches
     revalidatePath("/orders");
     revalidatePath("/my-wishes");
     revalidatePath(`/admin/orders/${validatedData.orderId}`);

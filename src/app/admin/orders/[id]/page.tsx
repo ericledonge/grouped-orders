@@ -1,11 +1,13 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ArrowLeftIcon, PencilIcon } from "lucide-react";
+import { ArrowLeftIcon, PencilIcon, PlusIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
+import { BasketsSection } from "@/features/baskets/components/baskets-section";
 import {
   OrderStatusBadge,
   OrderTypeBadge,
@@ -32,6 +34,14 @@ export default async function OrderDetailPage({
   if (!order) {
     notFound();
   }
+
+  // Récupérer les paniers de cette commande
+  const baskets = await basketRepository.findByOrderIdWithWishCount(id);
+
+  // Compter les souhaits disponibles pour un nouveau panier (status = submitted)
+  const availableWishesCount = order.wishes.filter(
+    (w) => w.status === "submitted",
+  ).length;
 
   // Calculer les statistiques des souhaits par statut
   const wishStats = order.wishes.reduce(
@@ -72,12 +82,22 @@ export default async function OrderDetailPage({
           )}
         </div>
 
-        <Button variant="outline" asChild>
-          <Link href={`/admin/orders/${id}/edit`}>
-            <PencilIcon className="mr-2 h-4 w-4" />
-            Éditer
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/admin/orders/${id}/edit`}>
+              <PencilIcon className="mr-2 h-4 w-4" />
+              Éditer
+            </Link>
+          </Button>
+          {availableWishesCount > 0 && (
+            <Button asChild>
+              <Link href={`/admin/orders/${id}/baskets/new`}>
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Créer un panier
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Statistiques */}
@@ -133,8 +153,11 @@ export default async function OrderDetailPage({
         </Card>
       </div>
 
+      {/* Section Paniers */}
+      <BasketsSection baskets={baskets} orderId={id} />
+
       {/* Liste des souhaits avec filtres */}
-      <WishesTableWithFilter wishes={order.wishes} />
+      <WishesTableWithFilter wishes={order.wishes} orderId={id} />
     </div>
   );
 }

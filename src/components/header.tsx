@@ -5,15 +5,19 @@ import {
   HeartIcon,
   LayoutDashboardIcon,
   LogOutIcon,
+  MapPinIcon,
   MenuIcon,
+  PackageCheckIcon,
   PackageIcon,
   SettingsIcon,
   ShieldIcon,
+  ShoppingCartIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth/auth-clients";
+import { NotificationCenter } from "@/features/notifications/components/notification-center";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
 import {
@@ -41,11 +45,14 @@ interface NavItem {
 const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
   { label: "Commandes", href: "/admin/orders", icon: PackageIcon },
+  { label: "Points de dépôt", href: "/admin/deposit-points", icon: MapPinIcon },
 ];
 
 const memberNav: NavItem[] = [
   { label: "Commandes", href: "/orders", icon: PackageIcon },
   { label: "Mes souhaits", href: "/my-wishes", icon: HeartIcon },
+  { label: "Mes paniers", href: "/my-baskets", icon: ShoppingCartIcon },
+  { label: "Mes retraits", href: "/my-pickups", icon: PackageCheckIcon },
 ];
 
 interface HeaderProps {
@@ -57,6 +64,8 @@ interface HeaderProps {
     email?: string | null;
     image?: string | null;
   } | null;
+  /** ID de l'utilisateur pour les notifications */
+  userId?: string | null;
 }
 
 function NavLinks({
@@ -95,7 +104,7 @@ function NavLinks({
   );
 }
 
-export function Header({ userRole, user }: HeaderProps) {
+export function Header({ userRole, user, userId }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAdmin = userRole === "admin";
@@ -127,6 +136,7 @@ export function Header({ userRole, user }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {userId && <NotificationCenter userId={userId} />}
           <ModeToggle />
           {user && (
             <>
