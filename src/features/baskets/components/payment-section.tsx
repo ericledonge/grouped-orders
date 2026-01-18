@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { InfoIcon, Loader2Icon, SendIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Loader2Icon, SendIcon, InfoIcon } from "lucide-react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +15,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { markPaymentSentAction } from "../use-cases/mark-payment-sent.action";
 
 interface PaymentSectionProps {
@@ -59,9 +59,17 @@ export function PaymentSection({ basketId, totalToPay }: PaymentSectionProps) {
             <div className="text-sm text-blue-800 dark:text-blue-200">
               <p className="font-medium mb-2">Instructions de paiement :</p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>Envoyez le montant de <strong>{totalToPay.toFixed(2)} €</strong> via Interac</li>
-                <li>Une fois le virement effectué, cliquez sur le bouton ci-dessous</li>
-                <li>L'administrateur confirmera la réception de votre paiement</li>
+                <li>
+                  Envoyez le montant de{" "}
+                  <strong>{totalToPay.toFixed(2)} €</strong> via Interac
+                </li>
+                <li>
+                  Une fois le virement effectué, cliquez sur le bouton
+                  ci-dessous
+                </li>
+                <li>
+                  L'administrateur confirmera la réception de votre paiement
+                </li>
               </ol>
             </div>
           </div>
@@ -81,10 +89,13 @@ export function PaymentSection({ basketId, totalToPay }: PaymentSectionProps) {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Confirmer l'envoi du paiement</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Confirmer l'envoi du paiement
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   Vous confirmez avoir envoyé un paiement de{" "}
-                  <strong>{totalToPay.toFixed(2)} €</strong> pour vos souhaits validés.
+                  <strong>{totalToPay.toFixed(2)} €</strong> pour vos souhaits
+                  validés.
                   <br />
                   <br />
                   L'administrateur sera notifié et confirmera la réception.

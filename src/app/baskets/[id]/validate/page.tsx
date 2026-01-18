@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
 import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { ValidateWishesForm } from "@/features/baskets/use-cases/validate-wishes-form";
-import { requireMember } from "@/lib/auth/session";
 import { ORDER_TYPE_LABELS } from "@/features/orders/domain/order.labels";
-import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
+import { requireMember } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Valider mes souhaits - Grouped Order",
@@ -45,7 +45,9 @@ export default async function ValidateBasketPage({
   }
 
   // Filtrer les souhaits qui sont en status "in_basket" (pas encore validés/refusés)
-  const wishesToValidate = basket.wishes.filter((w) => w.status === "in_basket");
+  const wishesToValidate = basket.wishes.filter(
+    (w) => w.status === "in_basket",
+  );
 
   if (wishesToValidate.length === 0) {
     // Tous les souhaits ont déjà été validés/refusés

@@ -1,3 +1,8 @@
+import { config } from "dotenv";
+
+// Load .env file for CLI usage
+config();
+
 import { eq } from "drizzle-orm";
 import { db } from "../src/lib/db";
 import { user } from "../src/lib/db/schema";

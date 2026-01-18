@@ -6,14 +6,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { BasketsSection } from "@/features/baskets/components/baskets-section";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import {
   OrderStatusBadge,
   OrderTypeBadge,
 } from "@/features/orders/components/order-badges";
 import { ORDER_TYPE_LABELS } from "@/features/orders/domain/order.labels";
 import { orderRepository } from "@/features/orders/domain/order.repository";
+import { AdminCreateWishSheet } from "@/features/wishes/components/admin-create-wish-sheet";
 import { WishesTableWithFilter } from "@/features/wishes/components/wishes-table-with-filter";
 
 export const metadata: Metadata = {
@@ -83,6 +84,7 @@ export default async function OrderDetailPage({
         </div>
 
         <div className="flex gap-2">
+          {order.status === "open" && <AdminCreateWishSheet orderId={id} />}
           <Button variant="outline" asChild>
             <Link href={`/admin/orders/${id}/edit`}>
               <PencilIcon className="mr-2 h-4 w-4" />

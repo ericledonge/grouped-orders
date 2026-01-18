@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   Loader2Icon,
   MapPinIcon,
@@ -9,10 +7,9 @@ import {
   StarIcon,
   Trash2Icon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +21,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { DepositPoint } from "../domain/deposit-point.types";
 import {
-  setDefaultDepositPointAction,
   deleteDepositPointAction,
+  setDefaultDepositPointAction,
   updateDepositPointAction,
 } from "../use-cases/deposit-point.action";
-import type { DepositPoint } from "../domain/deposit-point.types";
 
 interface DepositPointTableProps {
   depositPoints: DepositPoint[];

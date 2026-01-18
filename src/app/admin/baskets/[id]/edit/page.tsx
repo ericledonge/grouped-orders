@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { EditBasketForm } from "@/features/baskets/use-cases/edit-basket-form";
 
 export const metadata: Metadata = {

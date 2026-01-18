@@ -1,12 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2Icon, ReceiptIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +15,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { addCustomsCostAction } from "../use-cases/add-customs-cost.action";
 
 interface AddCustomsDialogProps {
@@ -70,7 +70,8 @@ export function AddCustomsDialog({
 
   // Calculer l'estimation du coût par jeu
   const costNum = Number.parseFloat(customsCost || "0") || 0;
-  const avgCostPerGame = validatedWishesCount > 0 ? costNum / validatedWishesCount : 0;
+  const avgCostPerGame =
+    validatedWishesCount > 0 ? costNum / validatedWishesCount : 0;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -95,7 +96,9 @@ export function AddCustomsDialog({
 
         <div className="space-y-4 py-4">
           <div>
-            <Label htmlFor="customsCost">Montant total des frais de douane (€)</Label>
+            <Label htmlFor="customsCost">
+              Montant total des frais de douane (€)
+            </Label>
             <Input
               id="customsCost"
               type="text"
@@ -116,7 +119,8 @@ export function AddCustomsDialog({
                 </span>
               </p>
               <p className="text-muted-foreground mt-1">
-                Total jeux : {totalGames.toFixed(2)} € + Douane : {costNum.toFixed(2)} € ={" "}
+                Total jeux : {totalGames.toFixed(2)} € + Douane :{" "}
+                {costNum.toFixed(2)} € ={" "}
                 <span className="font-medium text-foreground">
                   {(totalGames + costNum).toFixed(2)} €
                 </span>
@@ -129,7 +133,9 @@ export function AddCustomsDialog({
           <AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleSubmit}
-            disabled={isPending || !customsCost || Number.parseFloat(customsCost) < 0}
+            disabled={
+              isPending || !customsCost || Number.parseFloat(customsCost) < 0
+            }
           >
             {isPending ? (
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />

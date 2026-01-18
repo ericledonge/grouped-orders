@@ -1,5 +1,5 @@
-import type { notification } from "@/lib/db/schema";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import type { notification } from "@/lib/db/schema";
 
 /**
  * Type pour une notification sélectionnée depuis la base de données

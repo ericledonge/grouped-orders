@@ -1,11 +1,11 @@
 "use server";
 
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { eq, and } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { wish, basket } from "@/lib/db/schema";
-import { requireAdmin } from "@/lib/auth/session";
 import { notificationService } from "@/features/notifications/domain/notification.service";
+import { requireAdmin } from "@/lib/auth/session";
+import { db } from "@/lib/db";
+import { basket, wish } from "@/lib/db/schema";
 
 export interface ConfirmPaymentState {
   success: boolean;
@@ -163,7 +163,10 @@ export async function recordPartialPaymentAction(
 
     return { success: true };
   } catch (error) {
-    console.error("Erreur lors de l'enregistrement du paiement partiel:", error);
+    console.error(
+      "Erreur lors de l'enregistrement du paiement partiel:",
+      error,
+    );
     return {
       success: false,
       error: "Une erreur est survenue",

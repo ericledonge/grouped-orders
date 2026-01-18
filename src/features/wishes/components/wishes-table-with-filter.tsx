@@ -31,11 +31,12 @@ interface WishWithUser {
   philibertUrl: string | null;
   status: WishStatus;
   createdAt: Date;
+  guestName: string | null;
   user: {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
 }
 
 interface WishesTableWithFilterProps {
@@ -49,7 +50,9 @@ const ALL_STATUSES = "all";
  * Table affichant la liste des souhaits d'une commande avec filtres par statut
  */
 export function WishesTableWithFilter({ wishes }: WishesTableWithFilterProps) {
-  const [statusFilter, setStatusFilter] = useState<WishStatus | typeof ALL_STATUSES>(ALL_STATUSES);
+  const [statusFilter, setStatusFilter] = useState<
+    WishStatus | typeof ALL_STATUSES
+  >(ALL_STATUSES);
 
   // Filter wishes based on selected status
   const filteredWishes = useMemo(() => {
@@ -88,14 +91,18 @@ export function WishesTableWithFilter({ wishes }: WishesTableWithFilterProps) {
     <Card>
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Souhaits ({filteredWishes.length}/{wishes.length})</CardTitle>
-          
+          <CardTitle>
+            Souhaits ({filteredWishes.length}/{wishes.length})
+          </CardTitle>
+
           {/* Filter Controls */}
           <div className="flex items-center gap-2">
             <FilterIcon className="h-4 w-4 text-muted-foreground" />
             <Select
               value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as WishStatus | typeof ALL_STATUSES)}
+              onValueChange={(value) =>
+                setStatusFilter(value as WishStatus | typeof ALL_STATUSES)
+              }
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filtrer par statut" />
@@ -125,7 +132,8 @@ export function WishesTableWithFilter({ wishes }: WishesTableWithFilterProps) {
       <CardContent>
         {filteredWishes.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
-            Aucun souhait avec le statut "{WISH_STATUS_LABELS[statusFilter as WishStatus]}".
+            Aucun souhait avec le statut "
+            {WISH_STATUS_LABELS[statusFilter as WishStatus]}".
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -144,13 +152,28 @@ export function WishesTableWithFilter({ wishes }: WishesTableWithFilterProps) {
                   <tr key={wish.id} className="group">
                     <td className="py-4 text-sm">
                       <div>
-                        <p className="font-medium">{wish.user.name}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {wish.user.email}
-                        </p>
+                        {wish.user ? (
+                          <>
+                            <p className="font-medium">{wish.user.name}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {wish.user.email}
+                            </p>
+                          </>
+                        ) : wish.guestName ? (
+                          <>
+                            <p className="font-medium">{wish.guestName}</p>
+                            <p className="text-muted-foreground text-xs italic">
+                              Invite
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-muted-foreground">-</p>
+                        )}
                       </div>
                     </td>
-                    <td className="py-4 text-sm font-medium">{wish.gameName}</td>
+                    <td className="py-4 text-sm font-medium">
+                      {wish.gameName}
+                    </td>
                     <td className="py-4 text-sm">
                       {wish.philibertUrl ? (
                         <a

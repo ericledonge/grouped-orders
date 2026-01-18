@@ -1,12 +1,12 @@
+import { AlertCircleIcon, PackageIcon, ShoppingCartIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertCircleIcon, PackageIcon, ShoppingCartIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
-import { requireMember } from "@/lib/auth/session";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { ORDER_TYPE_LABELS } from "@/features/orders/domain/order.labels";
+import { requireMember } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Mes paniers - Grouped Order",
@@ -107,7 +107,8 @@ export default async function MyBasketsPage() {
                       const customsShare = wish.customsShare
                         ? Number.parseFloat(wish.customsShare)
                         : 0;
-                      const wishTotal = unitPrice + shippingShare + customsShare;
+                      const wishTotal =
+                        unitPrice + shippingShare + customsShare;
 
                       return (
                         <div
@@ -117,7 +118,8 @@ export default async function MyBasketsPage() {
                           <div>
                             <p className="font-medium">{wish.gameName}</p>
                             <p className="text-sm text-muted-foreground">
-                              {unitPrice.toFixed(2)} € + {shippingShare.toFixed(2)} € port
+                              {unitPrice.toFixed(2)} € +{" "}
+                              {shippingShare.toFixed(2)} € port
                               {customsShare > 0 &&
                                 ` + ${customsShare.toFixed(2)} € douane`}
                             </p>

@@ -4,6 +4,20 @@ import { wish } from "@/lib/db/schema";
 import type { NewWish } from "./wish.types";
 
 /**
+ * Données pour la création d'un souhait par un admin
+ * Supporte les utilisateurs inscrits et les invités
+ */
+interface AdminCreateWishData {
+  orderId: string;
+  userId?: string | null;
+  guestName?: string | null;
+  gameName: string;
+  philibertReference: string;
+  philibertUrl?: string | null;
+  createdBy: string;
+}
+
+/**
  * Repository pour les opérations de base de données sur les souhaits
  */
 export const wishRepository = {
@@ -21,6 +35,30 @@ export const wishRepository = {
         gameName: data.gameName,
         philibertReference: data.philibertReference,
         philibertUrl: data.philibertUrl,
+        createdBy: data.userId,
+        status: "submitted",
+      })
+      .returning();
+
+    return newWish;
+  },
+
+  /**
+   * Crée un nouveau souhait par un admin (pour un utilisateur ou un invité)
+   * @param data - Données du souhait incluant userId OU guestName
+   * @returns Le souhait créé
+   */
+  async createByAdmin(data: AdminCreateWishData) {
+    const [newWish] = await db
+      .insert(wish)
+      .values({
+        orderId: data.orderId,
+        userId: data.userId ?? null,
+        guestName: data.guestName ?? null,
+        gameName: data.gameName,
+        philibertReference: data.philibertReference,
+        philibertUrl: data.philibertUrl ?? null,
+        createdBy: data.createdBy,
         status: "submitted",
       })
       .returning();
@@ -93,7 +131,13 @@ export const wishRepository = {
   async update(
     id: string,
     data: Partial<{
-      status: "submitted" | "in_basket" | "validated" | "refused" | "paid" | "picked_up";
+      status:
+        | "submitted"
+        | "in_basket"
+        | "validated"
+        | "refused"
+        | "paid"
+        | "picked_up";
       basketId: string | null;
       unitPrice: string | null;
       shippingShare: string | null;

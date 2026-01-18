@@ -1,12 +1,15 @@
 "use server";
 
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { eq, and } from "drizzle-orm";
+import { requireAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { wish } from "@/lib/db/schema";
 import { basketRepository } from "../domain/basket.repository";
-import { calculateProrataShares, calculateAmountDue } from "../domain/basket.service";
-import { requireAdmin } from "@/lib/auth/session";
+import {
+  calculateAmountDue,
+  calculateProrataShares,
+} from "../domain/basket.service";
 
 export interface AddCustomsCostState {
   success: boolean;
@@ -34,10 +37,14 @@ export async function addCustomsCostAction(
     }
 
     // Vérifier que le panier est dans un statut permettant l'ajout de frais de douane
-    if (basket.status !== "awaiting_validation" && basket.status !== "validated") {
+    if (
+      basket.status !== "awaiting_validation" &&
+      basket.status !== "validated"
+    ) {
       return {
         success: false,
-        error: "Les frais de douane ne peuvent être ajoutés qu'aux paniers validés ou en attente de validation",
+        error:
+          "Les frais de douane ne peuvent être ajoutés qu'aux paniers validés ou en attente de validation",
       };
     }
 
@@ -66,8 +73,14 @@ export async function addCustomsCostAction(
     for (const w of eligibleWishes) {
       const customsShare = sharesMap.get(w.id) || 0;
       const unitPrice = w.unitPrice ? Number.parseFloat(w.unitPrice) : 0;
-      const shippingShare = w.shippingShare ? Number.parseFloat(w.shippingShare) : 0;
-      const newAmountDue = calculateAmountDue(unitPrice, shippingShare, customsShare);
+      const shippingShare = w.shippingShare
+        ? Number.parseFloat(w.shippingShare)
+        : 0;
+      const newAmountDue = calculateAmountDue(
+        unitPrice,
+        shippingShare,
+        customsShare,
+      );
 
       await db
         .update(wish)

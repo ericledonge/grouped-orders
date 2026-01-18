@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { basketRepository } from "../domain/basket.repository";
-import { wishRepository } from "@/features/wishes/domain/wish.repository";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { adminRepository } from "@/features/notifications/domain/admin.repository";
 import { notificationService } from "@/features/notifications/domain/notification.service";
+import { wishRepository } from "@/features/wishes/domain/wish.repository";
+import { auth } from "@/lib/auth";
+import { basketRepository } from "../domain/basket.repository";
 
 export interface ValidateWishesState {
   success: boolean;
@@ -86,18 +86,26 @@ export async function validateWishesAction(
 
     // Mettre à jour les souhaits
     for (const validation of validations) {
-      const newStatus = validation.action === "validate" ? "validated" : "refused";
-      
+      const newStatus =
+        validation.action === "validate" ? "validated" : "refused";
+
       // Calculer le montant dû si validé
       const wishData = await wishRepository.findById(validation.wishId);
       if (!wishData) continue;
 
-      const unitPrice = wishData.unitPrice ? Number.parseFloat(wishData.unitPrice) : 0;
-      const shippingShare = wishData.shippingShare ? Number.parseFloat(wishData.shippingShare) : 0;
-      const customsShare = wishData.customsShare ? Number.parseFloat(wishData.customsShare) : 0;
-      const amountDue = validation.action === "validate" 
-        ? (unitPrice + shippingShare + customsShare).toFixed(2)
-        : "0";
+      const unitPrice = wishData.unitPrice
+        ? Number.parseFloat(wishData.unitPrice)
+        : 0;
+      const shippingShare = wishData.shippingShare
+        ? Number.parseFloat(wishData.shippingShare)
+        : 0;
+      const customsShare = wishData.customsShare
+        ? Number.parseFloat(wishData.customsShare)
+        : 0;
+      const amountDue =
+        validation.action === "validate"
+          ? (unitPrice + shippingShare + customsShare).toFixed(2)
+          : "0";
 
       await wishRepository.update(validation.wishId, {
         status: newStatus,

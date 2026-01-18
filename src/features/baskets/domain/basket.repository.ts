@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { basket, wish } from "@/lib/db/schema";
-import type { NewBasket, BasketStatus } from "./basket.types";
+import type { BasketStatus, NewBasket } from "./basket.types";
 
 /**
  * Repository pour les opérations de base de données sur les paniers
@@ -188,19 +188,16 @@ export const basketRepository = {
     const userWishes = await db
       .select()
       .from(wish)
-      .where(
-        and(
-          eq(wish.userId, userId),
-          eq(wish.status, "in_basket"),
-        ),
-      );
+      .where(and(eq(wish.userId, userId), eq(wish.status, "in_basket")));
 
     if (userWishes.length === 0) {
       return [];
     }
 
     // Récupérer les IDs des paniers uniques
-    const basketIds = [...new Set(userWishes.map((w) => w.basketId).filter(Boolean))] as string[];
+    const basketIds = [
+      ...new Set(userWishes.map((w) => w.basketId).filter(Boolean)),
+    ] as string[];
 
     if (basketIds.length === 0) {
       return [];
@@ -268,7 +265,9 @@ export const basketRepository = {
     }
 
     // Récupérer les IDs des paniers uniques
-    const basketIds = [...new Set(userWishes.map((w) => w.basketId).filter(Boolean))] as string[];
+    const basketIds = [
+      ...new Set(userWishes.map((w) => w.basketId).filter(Boolean)),
+    ] as string[];
 
     if (basketIds.length === 0) {
       return [];
@@ -323,7 +322,7 @@ export const basketRepository = {
     const memberMap = new Map<
       string,
       {
-        user: { id: string; name: string; email: string };
+        user: { id: string; name: string; email: string; isGuest: boolean };
         wishes: typeof basketData.wishes;
         totalDue: number;
         totalPaid: number;
@@ -332,12 +331,15 @@ export const basketRepository = {
     >();
 
     for (const w of basketData.wishes) {
-      if (!memberMap.has(w.userId)) {
-        memberMap.set(w.userId, {
+      // Utiliser l'ID utilisateur ou le nom de l'invité comme clé
+      const memberId = w.userId ?? `guest-${w.guestName}`;
+      if (!memberMap.has(memberId)) {
+        memberMap.set(memberId, {
           user: {
-            id: w.user.id,
-            name: w.user.name,
-            email: w.user.email,
+            id: w.user?.id ?? memberId,
+            name: w.user?.name ?? w.guestName ?? "Inconnu",
+            email: w.user?.email ?? "",
+            isGuest: !w.user,
           },
           wishes: [],
           totalDue: 0,
@@ -346,7 +348,7 @@ export const basketRepository = {
         });
       }
 
-      const member = memberMap.get(w.userId)!;
+      const member = memberMap.get(memberId)!;
       member.wishes.push(w);
       member.totalDue += w.amountDue ? Number.parseFloat(w.amountDue) : 0;
       member.totalPaid += w.amountPaid ? Number.parseFloat(w.amountPaid) : 0;
@@ -358,7 +360,11 @@ export const basketRepository = {
       const uniqueStatuses = [...new Set(statuses)];
 
       if (uniqueStatuses.length === 1) {
-        member.paymentStatus = uniqueStatuses[0] as "pending" | "sent" | "received" | "partial";
+        member.paymentStatus = uniqueStatuses[0] as
+          | "pending"
+          | "sent"
+          | "received"
+          | "partial";
       } else {
         member.paymentStatus = "mixed";
       }

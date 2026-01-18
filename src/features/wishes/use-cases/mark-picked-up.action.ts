@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { wishRepository } from "../domain/wish.repository";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { wishRepository } from "../domain/wish.repository";
 
 export interface MarkPickedUpState {
   success: boolean;

@@ -2,22 +2,22 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   ArrowLeftIcon,
-  PencilIcon,
+  CreditCardIcon,
   ExternalLinkIcon,
   PackageIcon,
-  CreditCardIcon,
+  PencilIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { basketRepository } from "@/features/baskets/domain/basket.repository";
-import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
-import { WishStatusBadge } from "@/features/wishes/components/wish-badges";
-import { roundToTwoDecimals } from "@/features/baskets/domain/basket.service";
 import { AddCustomsDialog } from "@/features/baskets/components/add-customs-dialog";
+import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
 import { BasketStatusActions } from "@/features/baskets/components/basket-status-actions";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
+import { roundToTwoDecimals } from "@/features/baskets/domain/basket.service";
+import { WishStatusBadge } from "@/features/wishes/components/wish-badges";
 
 export const metadata: Metadata = {
   title: "Détails du panier - Admin - Grouped Order",
@@ -54,21 +54,24 @@ export default async function BasketDetailPage({
     0,
   );
 
-  // Grouper par membre
+  // Grouper par membre (utilisateur ou invité)
   const memberTotals = new Map<
     string,
-    { name: string; email: string; count: number; total: number }
+    { name: string; email: string; isGuest: boolean; count: number; total: number }
   >();
   for (const wish of basket.wishes) {
-    const existing = memberTotals.get(wish.user.id);
+    // Utiliser l'ID utilisateur ou le nom de l'invité comme clé
+    const memberId = wish.user?.id ?? `guest-${wish.guestName}`;
+    const existing = memberTotals.get(memberId);
     const wishTotal = wish.amountDue ? Number.parseFloat(wish.amountDue) : 0;
     if (existing) {
       existing.count += 1;
       existing.total += wishTotal;
     } else {
-      memberTotals.set(wish.user.id, {
-        name: wish.user.name,
-        email: wish.user.email,
+      memberTotals.set(memberId, {
+        name: wish.user?.name ?? wish.guestName ?? "Inconnu",
+        email: wish.user?.email ?? "",
+        isGuest: !wish.user,
         count: 1,
         total: wishTotal,
       });
@@ -120,7 +123,11 @@ export default async function BasketDetailPage({
               <AddCustomsDialog
                 basketId={basket.id}
                 basketName={basket.name}
-                validatedWishesCount={basket.wishes.filter((w) => w.status === "validated" || w.status === "paid").length}
+                validatedWishesCount={
+                  basket.wishes.filter(
+                    (w) => w.status === "validated" || w.status === "paid",
+                  ).length
+                }
                 totalGames={totalGames}
               />
             </>
@@ -129,7 +136,11 @@ export default async function BasketDetailPage({
             <AddCustomsDialog
               basketId={basket.id}
               basketName={basket.name}
-              validatedWishesCount={basket.wishes.filter((w) => w.status === "validated" || w.status === "paid").length}
+              validatedWishesCount={
+                basket.wishes.filter(
+                  (w) => w.status === "validated" || w.status === "paid",
+                ).length
+              }
               totalGames={totalGames}
             />
           )}
@@ -218,7 +229,9 @@ export default async function BasketDetailPage({
                       </p>
                     </div>
                     <p className="text-lg font-bold">
-                      {total > 0 ? `${roundToTwoDecimals(total).toFixed(2)} €` : "-"}
+                      {total > 0
+                        ? `${roundToTwoDecimals(total).toFixed(2)} €`
+                        : "-"}
                     </p>
                   </div>
                 ),
@@ -252,13 +265,28 @@ export default async function BasketDetailPage({
                   <tr key={wish.id}>
                     <td className="py-4 text-sm">
                       <div>
-                        <p className="font-medium">{wish.user.name}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {wish.user.email}
-                        </p>
+                        {wish.user ? (
+                          <>
+                            <p className="font-medium">{wish.user.name}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {wish.user.email}
+                            </p>
+                          </>
+                        ) : wish.guestName ? (
+                          <>
+                            <p className="font-medium">{wish.guestName}</p>
+                            <p className="text-muted-foreground text-xs italic">
+                              Invite
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-muted-foreground">-</p>
+                        )}
                       </div>
                     </td>
-                    <td className="py-4 text-sm font-medium">{wish.gameName}</td>
+                    <td className="py-4 text-sm font-medium">
+                      {wish.gameName}
+                    </td>
                     <td className="py-4 text-sm">
                       {wish.philibertUrl ? (
                         <a

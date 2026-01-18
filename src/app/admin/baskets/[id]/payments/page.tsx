@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeftIcon, CreditCardIcon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { basketRepository } from "@/features/baskets/domain/basket.repository";
-import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
 import { AdminPaymentTable } from "@/features/baskets/components/admin-payment-table";
-import { requireAdmin } from "@/lib/auth/session";
+import { BasketStatusBadge } from "@/features/baskets/components/basket-badges";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { ORDER_TYPE_LABELS } from "@/features/orders/domain/order.labels";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Gestion des paiements - Admin",
@@ -32,7 +32,10 @@ export default async function AdminPaymentsPage({
   }
 
   // Calculer les totaux
-  const totalDue = basket.memberPayments.reduce((sum, m) => sum + m.totalDue, 0);
+  const totalDue = basket.memberPayments.reduce(
+    (sum, m) => sum + m.totalDue,
+    0,
+  );
   const totalReceived = basket.memberPayments.reduce(
     (sum, m) => sum + m.totalPaid,
     0,

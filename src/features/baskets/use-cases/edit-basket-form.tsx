@@ -1,23 +1,25 @@
 "use client";
 
-import { useActionState, useState, useMemo, useEffect, useTransition } from "react";
-import { useFormStatus } from "react-dom";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
+  CalculatorIcon,
   ExternalLinkIcon,
   Loader2Icon,
   SaveIcon,
   SendIcon,
-  CalculatorIcon,
   Trash2Icon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
+import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,18 +31,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  updateBasketPricesAction,
-  submitBasketForValidationAction,
-  type UpdateBasketPricesState,
-} from "./update-basket-prices.action";
-import { removeWishFromBasketAction } from "./remove-wish-from-basket.action";
-import { deleteBasketAction } from "./delete-basket.action";
-import {
-  calculateProrataShares,
   calculateAmountDue,
+  calculateProrataShares,
   roundToTwoDecimals,
 } from "../domain/basket.service";
+import { deleteBasketAction } from "./delete-basket.action";
+import { removeWishFromBasketAction } from "./remove-wish-from-basket.action";
+import {
+  submitBasketForValidationAction,
+  type UpdateBasketPricesState,
+  updateBasketPricesAction,
+} from "./update-basket-prices.action";
 
 interface WishWithUser {
   id: string;
@@ -51,11 +57,12 @@ interface WishWithUser {
   shippingShare: string | null;
   amountDue: string | null;
   createdAt: Date;
+  guestName: string | null;
   user: {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
 }
 
 interface EditBasketFormProps {
@@ -305,10 +312,23 @@ export function EditBasketForm({
                       <tr key={wish.id}>
                         <td className="py-4 text-sm">
                           <div>
-                            <p className="font-medium">{wish.user.name}</p>
-                            <p className="text-muted-foreground text-xs">
-                              {wish.user.email}
-                            </p>
+                            {wish.user ? (
+                              <>
+                                <p className="font-medium">{wish.user.name}</p>
+                                <p className="text-muted-foreground text-xs">
+                                  {wish.user.email}
+                                </p>
+                              </>
+                            ) : wish.guestName ? (
+                              <>
+                                <p className="font-medium">{wish.guestName}</p>
+                                <p className="text-muted-foreground text-xs italic">
+                                  Invite
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-muted-foreground">-</p>
+                            )}
                           </div>
                         </td>
                         <td className="py-4 text-sm font-medium">
@@ -379,8 +399,9 @@ export function EditBasketForm({
                                   <strong>{wish.gameName}</strong> du panier ?
                                   <br />
                                   <br />
-                                  Le souhait repassera en attente d&apos;affectation
-                                  et les frais de port seront recalculés.
+                                  Le souhait repassera en attente
+                                  d&apos;affectation et les frais de port seront
+                                  recalculés.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -452,16 +473,14 @@ export function EditBasketForm({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Supprimer ce panier ?
-                  </AlertDialogTitle>
+                  <AlertDialogTitle>Supprimer ce panier ?</AlertDialogTitle>
                   <AlertDialogDescription>
                     Êtes-vous sûr de vouloir supprimer le panier{" "}
                     <strong>{basketName}</strong> ?
                     <br />
                     <br />
-                    ⚠️ Cette action est irréversible. Tous les souhaits
-                    ({wishes.length}) seront remis en attente d&apos;affectation.
+                    ⚠️ Cette action est irréversible. Tous les souhaits (
+                    {wishes.length}) seront remis en attente d&apos;affectation.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

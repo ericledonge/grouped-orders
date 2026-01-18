@@ -1,17 +1,17 @@
 "use client";
 
-import { useActionState, useState, useMemo } from "react";
-import { useFormStatus } from "react-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ExternalLinkIcon, Loader2Icon, CheckIcon } from "lucide-react";
+import { CheckIcon, ExternalLinkIcon, Loader2Icon } from "lucide-react";
+import { useActionState, useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  createBasketAction,
   type CreateBasketState,
+  createBasketAction,
 } from "./create-basket.action";
 
 interface WishWithUser {
@@ -20,11 +20,12 @@ interface WishWithUser {
   philibertReference: string;
   philibertUrl: string | null;
   createdAt: Date;
+  guestName: string | null;
   user: {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
 }
 
 interface CreateBasketFormProps {
@@ -66,11 +67,13 @@ export function CreateBasketForm({
     for (const wishId of selectedWishes) {
       const wish = availableWishes.find((w) => w.id === wishId);
       if (wish) {
-        const existing = stats.get(wish.user.id);
+        const memberId = wish.user?.id ?? `guest-${wish.guestName}`;
+        const memberName = wish.user?.name ?? wish.guestName ?? "Inconnu";
+        const existing = stats.get(memberId);
         if (existing) {
           existing.count += 1;
         } else {
-          stats.set(wish.user.id, { name: wish.user.name, count: 1 });
+          stats.set(memberId, { name: memberName, count: 1 });
         }
       }
     }
@@ -198,10 +201,23 @@ export function CreateBasketForm({
                       </td>
                       <td className="py-4 text-sm">
                         <div>
-                          <p className="font-medium">{wish.user.name}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {wish.user.email}
-                          </p>
+                          {wish.user ? (
+                            <>
+                              <p className="font-medium">{wish.user.name}</p>
+                              <p className="text-muted-foreground text-xs">
+                                {wish.user.email}
+                              </p>
+                            </>
+                          ) : wish.guestName ? (
+                            <>
+                              <p className="font-medium">{wish.guestName}</p>
+                              <p className="text-muted-foreground text-xs italic">
+                                Invite
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-muted-foreground">-</p>
+                          )}
                         </div>
                       </td>
                       <td className="py-4 text-sm font-medium">
@@ -243,18 +259,20 @@ export function CreateBasketForm({
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {Array.from(memberStats.entries()).map(([userId, { name, count }]) => (
-                <div
-                  key={userId}
-                  className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
-                >
-                  <CheckIcon className="h-3 w-3 text-green-600" />
-                  <span className="font-medium">{name}</span>
-                  <span className="text-muted-foreground">
-                    ({count} jeu{count > 1 ? "x" : ""})
-                  </span>
-                </div>
-              ))}
+              {Array.from(memberStats.entries()).map(
+                ([userId, { name, count }]) => (
+                  <div
+                    key={userId}
+                    className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
+                  >
+                    <CheckIcon className="h-3 w-3 text-green-600" />
+                    <span className="font-medium">{name}</span>
+                    <span className="text-muted-foreground">
+                      ({count} jeu{count > 1 ? "x" : ""})
+                    </span>
+                  </div>
+                ),
+              )}
             </div>
           </CardContent>
         </Card>

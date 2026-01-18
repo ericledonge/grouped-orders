@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { basketRepository } from "../domain/basket.repository";
 import { wishRepository } from "@/features/wishes/domain/wish.repository";
+import { basketRepository } from "../domain/basket.repository";
 
 export interface RemoveWishFromBasketState {
   success: boolean;

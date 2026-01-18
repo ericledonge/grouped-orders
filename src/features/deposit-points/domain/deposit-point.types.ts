@@ -1,5 +1,5 @@
-import type { depositPoint } from "@/lib/db/schema";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import type { depositPoint } from "@/lib/db/schema";
 
 /**
  * Type pour un point de dépôt sélectionné depuis la base de données

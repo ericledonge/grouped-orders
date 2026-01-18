@@ -144,10 +144,23 @@ export default async function AdminDashboardPage() {
                     <tr key={wish.id} className="group">
                       <td className="py-3 text-sm">
                         <div>
-                          <p className="font-medium">{wish.user.name}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {wish.user.email}
-                          </p>
+                          {wish.user ? (
+                            <>
+                              <p className="font-medium">{wish.user.name}</p>
+                              <p className="text-muted-foreground text-xs">
+                                {wish.user.email}
+                              </p>
+                            </>
+                          ) : wish.guestName ? (
+                            <>
+                              <p className="font-medium">{wish.guestName}</p>
+                              <p className="text-muted-foreground text-xs italic">
+                                Invite
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-muted-foreground">-</p>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 text-sm font-medium">

@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   BellIcon,
-  CheckIcon,
   CheckCheckIcon,
+  CheckIcon,
   CreditCardIcon,
   HeartIcon,
   PackageCheckIcon,
@@ -15,6 +13,8 @@ import {
   ShoppingCartIcon,
   XCircleIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,12 +24,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type {
+  Notification,
+  NotificationType,
+} from "../domain/notification.types";
 import {
   getNotificationsAction,
-  markNotificationAsReadAction,
   markAllNotificationsAsReadAction,
+  markNotificationAsReadAction,
 } from "../use-cases/notification.action";
-import type { Notification, NotificationType } from "../domain/notification.types";
 
 /**
  * Icône selon le type de notification
@@ -171,8 +174,12 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
         ) : (
           <div className="max-h-[400px] overflow-y-auto">
             {notifications.map((notification) => {
-              const Icon = getNotificationIcon(notification.type as NotificationType);
-              const colorClass = getNotificationColor(notification.type as NotificationType);
+              const Icon = getNotificationIcon(
+                notification.type as NotificationType,
+              );
+              const colorClass = getNotificationColor(
+                notification.type as NotificationType,
+              );
 
               return (
                 <DropdownMenuItem

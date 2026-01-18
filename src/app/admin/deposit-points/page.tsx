@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
 import { MapPinIcon } from "lucide-react";
+import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { depositPointRepository } from "@/features/deposit-points/domain/deposit-point.repository";
 import { CreateDepositPointForm } from "@/features/deposit-points/components/create-deposit-point-form";
 import { DepositPointTable } from "@/features/deposit-points/components/deposit-point-table";
+import { depositPointRepository } from "@/features/deposit-points/domain/deposit-point.repository";
 import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = {

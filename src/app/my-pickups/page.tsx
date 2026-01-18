@@ -1,10 +1,10 @@
+import { CheckCircleIcon, PackageCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PackageCheckIcon, CheckCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { PickupCard } from "@/features/baskets/components/pickup-card";
+import { basketRepository } from "@/features/baskets/domain/basket.repository";
 import { requireMember } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
@@ -26,9 +26,7 @@ export default async function MyPickupsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mes retraits</h1>
-          <p className="text-muted-foreground">
-            Jeux disponibles au retrait
-          </p>
+          <p className="text-muted-foreground">Jeux disponibles au retrait</p>
         </div>
         <Button variant="outline" asChild>
           <Link href="/my-wishes">Mes souhaits</Link>
@@ -43,8 +41,8 @@ export default async function MyPickupsPage() {
               Aucun jeu à récupérer
             </h3>
             <p className="text-muted-foreground text-center max-w-md">
-              Vous n'avez pas de jeu en attente de retrait. Vos jeux apparaîtront
-              ici lorsqu'ils seront disponibles.
+              Vous n'avez pas de jeu en attente de retrait. Vos jeux
+              apparaîtront ici lorsqu'ils seront disponibles.
             </p>
             <Button asChild className="mt-4">
               <Link href="/orders">Voir les commandes ouvertes</Link>
@@ -63,7 +61,8 @@ export default async function MyPickupsPage() {
                   {totalGames > 1 ? "s" : ""} au retrait !
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Rendez-vous aux points de dépôt indiqués pour récupérer vos jeux
+                  Rendez-vous aux points de dépôt indiqués pour récupérer vos
+                  jeux
                 </p>
               </div>
             </div>

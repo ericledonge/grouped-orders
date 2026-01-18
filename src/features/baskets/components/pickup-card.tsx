@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   CheckCircle2Icon,
   Loader2Icon,
   MapPinIcon,
   PackageCheckIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +20,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { BasketStatusBadge } from "./basket-badges";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { markWishAsPickedUpAction } from "@/features/wishes/use-cases/mark-picked-up.action";
+import { BasketStatusBadge } from "./basket-badges";
 
 interface WishWithDepositPoint {
   id: string;
@@ -169,7 +169,9 @@ export function PickupCard({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Annuler</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handlePickup(wish.id)}>
+                          <AlertDialogAction
+                            onClick={() => handlePickup(wish.id)}
+                          >
                             Confirmer
                           </AlertDialogAction>
                         </AlertDialogFooter>

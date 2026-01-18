@@ -16,8 +16,8 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "@/lib/auth/auth-clients";
 import { NotificationCenter } from "@/features/notifications/components/notification-center";
+import { authClient } from "@/lib/auth/auth-clients";
 import { ModeToggle } from "./mode-toggle";
 import { Button } from "./ui/button";
 import {

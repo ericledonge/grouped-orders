@@ -1,14 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
+import { Loader2Icon, MapPinIcon, PackageCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Loader2Icon,
-  PackageCheckIcon,
-  MapPinIcon,
-} from "lucide-react";
+import { useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,11 +15,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  markBasketAsReceivedAction,
-  markBasketAsAvailableAction,
-} from "../use-cases/basket-status.action";
+import { Button } from "@/components/ui/button";
 import type { BasketStatus } from "../domain/basket.types";
+import {
+  markBasketAsAvailableAction,
+  markBasketAsReceivedAction,
+} from "../use-cases/basket-status.action";
 
 interface BasketStatusActionsProps {
   basketId: string;

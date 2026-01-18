@@ -1,14 +1,14 @@
 "use client";
 
+import { Loader2Icon, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
-import { useRouter } from "next/navigation";
-import { Loader2Icon, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   createDepositPointAction,
   type DepositPointActionState,
@@ -50,7 +50,9 @@ export function CreateDepositPointForm({
     if (state.success) {
       toast.success("Point de dépôt créé");
       // Réinitialiser le formulaire
-      const form = document.getElementById("create-deposit-point-form") as HTMLFormElement;
+      const form = document.getElementById(
+        "create-deposit-point-form",
+      ) as HTMLFormElement;
       form?.reset();
       router.refresh();
     } else if (state.error) {

@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import {
   CheckCircle2Icon,
-  XCircleIcon,
   Loader2Icon,
   ShoppingCartIcon,
+  XCircleIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +20,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { validateWishesAction } from "./validate-wishes.action";
 
 interface WishToValidate {
@@ -52,13 +52,15 @@ export function ValidateWishesForm({
 }: ValidateWishesFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [choices, setChoices] = useState<Record<string, ValidationChoice>>(() => {
-    const initial: Record<string, ValidationChoice> = {};
-    for (const wish of wishes) {
-      initial[wish.id] = null;
-    }
-    return initial;
-  });
+  const [choices, setChoices] = useState<Record<string, ValidationChoice>>(
+    () => {
+      const initial: Record<string, ValidationChoice> = {};
+      for (const wish of wishes) {
+        initial[wish.id] = null;
+      }
+      return initial;
+    },
+  );
 
   // Calculer les totaux
   const wishesData = wishes.map((wish) => {
@@ -191,7 +193,9 @@ export function ValidateWishesForm({
 
                 <div className="flex gap-2">
                   <Button
-                    variant={choices[wish.id] === "validate" ? "default" : "outline"}
+                    variant={
+                      choices[wish.id] === "validate" ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => handleChoiceChange(wish.id, "validate")}
                     className={
@@ -204,7 +208,9 @@ export function ValidateWishesForm({
                     Valider
                   </Button>
                   <Button
-                    variant={choices[wish.id] === "refuse" ? "default" : "outline"}
+                    variant={
+                      choices[wish.id] === "refuse" ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => handleChoiceChange(wish.id, "refuse")}
                     className={

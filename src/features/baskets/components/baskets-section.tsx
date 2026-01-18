@@ -4,8 +4,8 @@ import { EyeIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BasketStatusBadge } from "./basket-badges";
 import type { Basket } from "../domain/basket.types";
+import { BasketStatusBadge } from "./basket-badges";
 
 interface BasketWithCount extends Basket {
   wishCount: number;
@@ -98,7 +98,11 @@ export function BasketsSection({ baskets, orderId }: BasketsSectionProps) {
                               <span className="sr-only">Éditer</span>
                             </Link>
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-destructive">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive"
+                          >
                             <Trash2Icon className="h-4 w-4" />
                             <span className="sr-only">Supprimer</span>
                           </Button>

@@ -1,12 +1,12 @@
 "use server";
 
+import { count, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { eq, count } from "drizzle-orm";
+import { requireAdmin } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { wish } from "@/lib/db/schema";
 import { depositPointRepository } from "../domain/deposit-point.repository";
-import { requireAdmin } from "@/lib/auth/session";
 
 export interface DepositPointActionState {
   success: boolean;
@@ -15,7 +15,10 @@ export interface DepositPointActionState {
 
 const depositPointSchema = z.object({
   name: z.string().min(1, "Le nom est requis").max(100, "Nom trop long"),
-  address: z.string().min(1, "L'adresse est requise").max(500, "Adresse trop longue"),
+  address: z
+    .string()
+    .min(1, "L'adresse est requise")
+    .max(500, "Adresse trop longue"),
   isDefault: z.boolean().optional().default(false),
 });
 
@@ -51,7 +54,9 @@ export async function createDepositPointAction(
     if (isDefault) {
       const existingDefault = await depositPointRepository.findDefault();
       if (existingDefault) {
-        await depositPointRepository.update(existingDefault.id, { isDefault: false });
+        await depositPointRepository.update(existingDefault.id, {
+          isDefault: false,
+        });
       }
     }
 

@@ -301,10 +301,18 @@ export const wish = pgTable("wish", {
     .notNull()
     .references(() => order.id, { onDelete: "cascade" }),
 
-  // Référence vers l'utilisateur qui a fait le souhait (restrict on delete: ne pas supprimer un user avec des souhaits)
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "restrict" }),
+  // Référence vers l'utilisateur qui a fait le souhait (nullable pour les invités)
+  // Si userId est null, guestName doit être renseigné
+  userId: text("user_id").references(() => user.id, { onDelete: "restrict" }),
+
+  // Nom de l'invité (pour les souhaits créés par un admin pour quelqu'un sans compte)
+  // Si guestName est renseigné, userId doit être null
+  guestName: text("guest_name"),
+
+  // Référence vers l'utilisateur qui a créé le souhait (admin ou membre lui-même)
+  createdBy: text("created_by").references(() => user.id, {
+    onDelete: "restrict",
+  }),
 
   // Nom du jeu demandé
   gameName: text("game_name").notNull(),

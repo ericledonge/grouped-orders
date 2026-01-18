@@ -24,17 +24,17 @@ export const updateBasketPricesSchema = z.object({
   shippingCost: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "Format de prix invalide")
-    .refine((val) => Number.parseFloat(val) >= 0, "Les frais doivent être >= 0"),
+    .refine(
+      (val) => Number.parseFloat(val) >= 0,
+      "Les frais doivent être >= 0",
+    ),
   wishes: z.array(
     z.object({
       id: z.string().uuid(),
       unitPrice: z
         .string()
         .regex(/^\d+(\.\d{1,2})?$/, "Format de prix invalide")
-        .refine(
-          (val) => Number.parseFloat(val) >= 0,
-          "Le prix doit être >= 0",
-        ),
+        .refine((val) => Number.parseFloat(val) >= 0, "Le prix doit être >= 0"),
     }),
   ),
 });

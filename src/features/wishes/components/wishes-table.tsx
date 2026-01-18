@@ -17,11 +17,12 @@ interface WishWithUser {
     | "paid"
     | "picked_up";
   createdAt: Date;
+  guestName: string | null;
   user: {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
 }
 
 interface WishesTableProps {
@@ -69,10 +70,23 @@ export function WishesTable({ wishes }: WishesTableProps) {
                 <tr key={wish.id} className="group">
                   <td className="py-4 text-sm">
                     <div>
-                      <p className="font-medium">{wish.user.name}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {wish.user.email}
-                      </p>
+                      {wish.user ? (
+                        <>
+                          <p className="font-medium">{wish.user.name}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {wish.user.email}
+                          </p>
+                        </>
+                      ) : wish.guestName ? (
+                        <>
+                          <p className="font-medium">{wish.guestName}</p>
+                          <p className="text-muted-foreground text-xs italic">
+                            Invite
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-muted-foreground">-</p>
+                      )}
                     </div>
                   </td>
                   <td className="py-4 text-sm font-medium">{wish.gameName}</td>

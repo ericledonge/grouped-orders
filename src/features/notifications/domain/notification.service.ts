@@ -1,5 +1,5 @@
 import { notificationRepository } from "./notification.repository";
-import type { NotificationType, NewNotification } from "./notification.types";
+import type { NewNotification, NotificationType } from "./notification.types";
 
 /**
  * Configuration des templates de notifications par type
@@ -29,8 +29,7 @@ const NOTIFICATION_TEMPLATES: Record<
 
   wish_picked_up: {
     title: () => "Jeu récupéré",
-    message: (data) =>
-      `${data.userName} a récupéré "${data.gameName}"`,
+    message: (data) => `${data.userName} a récupéré "${data.gameName}"`,
     linkTemplate: (data) => `/admin/baskets/${data.basketId}`,
   },
 
@@ -51,8 +50,7 @@ const NOTIFICATION_TEMPLATES: Record<
 
   wish_refused: {
     title: () => "Souhait refusé",
-    message: (data) =>
-      `Votre souhait "${data.gameName}" a été refusé.`,
+    message: (data) => `Votre souhait "${data.gameName}" a été refusé.`,
     linkTemplate: () => `/my-wishes`,
   },
 

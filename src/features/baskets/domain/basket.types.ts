@@ -1,5 +1,5 @@
-import type { basket, basketStatusEnum, wish } from "@/lib/db/schema";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import type { basket, basketStatusEnum, wish } from "@/lib/db/schema";
 
 /**
  * Type pour un panier sélectionné depuis la base de données

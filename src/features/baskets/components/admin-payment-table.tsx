@@ -1,16 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { CheckCircleIcon, DollarSignIcon, Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  CheckCircleIcon,
-  Loader2Icon,
-  DollarSignIcon,
-} from "lucide-react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,11 +15,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PaymentStatusBadge } from "./payment-status-badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   confirmPaymentReceivedAction,
   recordPartialPaymentAction,
 } from "../use-cases/confirm-payment.action";
+import { PaymentStatusBadge } from "./payment-status-badge";
 
 interface MemberPayment {
   user: {
@@ -63,7 +59,9 @@ export function AdminPaymentTable({
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
   const [partialAmount, setPartialAmount] = useState<string>("");
   const [partialDialogOpen, setPartialDialogOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<MemberPayment | null>(null);
+  const [selectedMember, setSelectedMember] = useState<MemberPayment | null>(
+    null,
+  );
 
   const handleConfirmPayment = async (userId: string) => {
     setProcessingUserId(userId);
@@ -159,7 +157,8 @@ export function AdminPaymentTable({
                       </div>
                     </td>
                     <td className="p-3 text-sm">
-                      {member.wishes.length} jeu{member.wishes.length > 1 ? "x" : ""}
+                      {member.wishes.length} jeu
+                      {member.wishes.length > 1 ? "x" : ""}
                     </td>
                     <td className="p-3 text-right font-medium">
                       {member.totalDue.toFixed(2)} €
@@ -176,9 +175,12 @@ export function AdminPaymentTable({
                           <AlertDialogTrigger asChild>
                             <Button
                               size="sm"
-                              disabled={isPending && processingUserId === member.user.id}
+                              disabled={
+                                isPending && processingUserId === member.user.id
+                              }
                             >
-                              {isPending && processingUserId === member.user.id ? (
+                              {isPending &&
+                              processingUserId === member.user.id ? (
                                 <Loader2Icon className="h-4 w-4 animate-spin" />
                               ) : (
                                 <CheckCircleIcon className="h-4 w-4 mr-1" />
@@ -193,14 +195,16 @@ export function AdminPaymentTable({
                               </AlertDialogTitle>
                               <AlertDialogDescription>
                                 Vous confirmez avoir reçu{" "}
-                                <strong>{member.totalDue.toFixed(2)} €</strong> de{" "}
-                                <strong>{member.user.name}</strong>.
+                                <strong>{member.totalDue.toFixed(2)} €</strong>{" "}
+                                de <strong>{member.user.name}</strong>.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Annuler</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleConfirmPayment(member.user.id)}
+                                onClick={() =>
+                                  handleConfirmPayment(member.user.id)
+                                }
                               >
                                 Confirmer
                               </AlertDialogAction>
@@ -255,7 +259,8 @@ export function AdminPaymentTable({
                       </div>
                     </td>
                     <td className="p-3 text-sm">
-                      {member.wishes.length} jeu{member.wishes.length > 1 ? "x" : ""}
+                      {member.wishes.length} jeu
+                      {member.wishes.length > 1 ? "x" : ""}
                     </td>
                     <td className="p-3 text-right font-medium">
                       {member.totalPaid.toFixed(2)} €
@@ -299,7 +304,8 @@ export function AdminPaymentTable({
                       </div>
                     </td>
                     <td className="p-3 text-sm">
-                      {member.wishes.length} jeu{member.wishes.length > 1 ? "x" : ""}
+                      {member.wishes.length} jeu
+                      {member.wishes.length > 1 ? "x" : ""}
                     </td>
                     <td className="p-3 text-right font-medium">
                       {member.totalDue.toFixed(2)} €
@@ -324,7 +330,8 @@ export function AdminPaymentTable({
               Enregistrer un paiement partiel pour{" "}
               <strong>{selectedMember.user.name}</strong>.
               <br />
-              Montant dû : <strong>{selectedMember.totalDue.toFixed(2)} €</strong>
+              Montant dû :{" "}
+              <strong>{selectedMember.totalDue.toFixed(2)} €</strong>
             </p>
             <div className="space-y-4">
               <div>

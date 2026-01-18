@@ -16,15 +16,18 @@ const PAYMENT_STATUS_CONFIG: Record<
   },
   received: {
     label: "Reçu",
-    variant: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+    variant:
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   },
   partial: {
     label: "Partiel",
-    variant: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+    variant:
+      "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
   },
   mixed: {
     label: "Mixte",
-    variant: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    variant:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   },
 };
 

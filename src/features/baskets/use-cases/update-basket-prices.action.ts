@@ -1,16 +1,16 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { notificationService } from "@/features/notifications/domain/notification.service";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { basket, wish } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
 import {
-  calculateProrataShares,
   calculateAmountDue,
+  calculateProrataShares,
 } from "../domain/basket.service";
-import { notificationService } from "@/features/notifications/domain/notification.service";
 
 export type UpdateBasketPricesState = {
   success: boolean;
@@ -92,7 +92,10 @@ export async function updateBasketPricesAction(
       .filter((item) => item.price > 0);
 
     // Calculer les parts de frais de port
-    const shippingShares = calculateProrataShares(prorataItems, shippingCostNum);
+    const shippingShares = calculateProrataShares(
+      prorataItems,
+      shippingCostNum,
+    );
     const sharesMap = new Map(shippingShares.map((s) => [s.id, s.share]));
 
     // Mettre à jour les frais de port du panier
@@ -204,16 +207,25 @@ export async function submitBasketForValidationAction(
     }
 
     // Notifier les membres concernés que le panier est prêt pour validation
+    // (uniquement les utilisateurs inscrits, pas les invités)
     try {
-      const userIds = [...new Set(basketWithWishes.wishes.map((w) => w.userId))];
-      await notificationService.createNotificationsForUsers(
-        userIds,
-        "basket_ready",
-        {
-          basketName: basketWithWishes.name || basketId,
-          basketId,
-        },
-      );
+      const userIds = [
+        ...new Set(
+          basketWithWishes.wishes
+            .map((w) => w.userId)
+            .filter((id): id is string => id !== null),
+        ),
+      ];
+      if (userIds.length > 0) {
+        await notificationService.createNotificationsForUsers(
+          userIds,
+          "basket_ready",
+          {
+            basketName: basketWithWishes.name || basketId,
+            basketId,
+          },
+        );
+      }
     } catch (notifError) {
       console.error("Erreur lors de l'envoi des notifications:", notifError);
     }
